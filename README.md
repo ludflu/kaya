@@ -15,7 +15,9 @@
 [![Tauri](https://img.shields.io/badge/Tauri-v2-24c8d8.svg?logo=tauri&logoColor=white)](https://tauri.app)
 [![Bun](https://img.shields.io/badge/Bun-1.x-f9f1e1.svg?logo=bun&logoColor=black)](https://bun.sh)
 
-[Download](https://github.com/kaya-go/kaya/releases) • [Web App (Stable)](https://kaya-go.github.io/kaya) • [Web App (Next)](https://kaya-go.github.io/kaya/next/) • [Documentation](docs/USER_GUIDE.md)
+[![Download](https://img.shields.io/badge/Download-Desktop_App-2ea44f?style=for-the-badge&logo=github)](https://github.com/kaya-go/kaya/releases)
+[![Web App](https://img.shields.io/badge/Open-Web_App-3b82f6?style=for-the-badge&logo=googlechrome&logoColor=white)](https://kaya-go.github.io/kaya)
+[![Next](https://img.shields.io/badge/Try-Next_Version-f97316?style=for-the-badge&logo=googlechrome&logoColor=white)](https://kaya-go.github.io/kaya/next/)
 
 <img src="docs/images/screenshot.jpg" alt="Kaya Screenshot" width="800">
 
