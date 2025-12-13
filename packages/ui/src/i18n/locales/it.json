@@ -213,14 +213,6 @@
     "updateFailedMessage": "Installazione aggiornamento fallita. Riprova più tardi o scarica manualmente l'ultima versione:"
   },
 
-  "landing": {
-    "tagline": "App elegante per il Go",
-    "continue": "Continua",
-    "newGame": "Nuova partita",
-    "library": "Libreria",
-    "dropSgfToOpen": "Trascina un file SGF per aprirlo"
-  },
-
   "editToolbar": {
     "stones": "Pietre",
     "playMode": "Modalità gioco",

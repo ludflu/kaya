@@ -45,6 +45,8 @@ export { Header } from './components/layout/Header';
 export { MobileTabBar } from './components/layout/MobileTabBar';
 export type { MobileTab } from './components/layout/MobileTabBar';
 export { MobileMenu } from './components/layout/MobileMenu'; // Added import
+export { LandingPage } from './components/layout/LandingPage';
+export type { LandingPageProps } from './components/layout/LandingPage';
 export { GameBoard } from './components/board/GameBoard';
 export { GameTreeGraph } from './components/gametree/GameTreeGraphReactFlow';
 export type {

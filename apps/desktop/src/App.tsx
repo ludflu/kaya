@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import {
   Header,
   ResizableLayout,
@@ -31,6 +31,8 @@ import {
   TauriDragProvider,
   type GameTreeGraphRef,
   useExternalLinks,
+  useLayoutMode,
+  LandingPage,
 } from '@kaya/ui';
 import { analytics } from './analytics';
 import { Updater } from './Updater';
@@ -90,7 +92,83 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
     scoringMode,
     deadStones,
     gameInfo,
+    gameTree,
+    rootId,
+    createNewGame,
+    filename,
+    loadSGFAsync,
+    setFileName,
   } = useGameTree();
+
+  // Layout mode for responsive landing page
+  const layoutMode = useLayoutMode();
+  const isMobileOrTablet = layoutMode === 'mobile' || layoutMode === 'tablet';
+  
+  // Initialize hasStarted based on layout - mobile/tablet starts with landing page
+  const [hasStarted, setHasStarted] = useState(() => {
+    // On initial load, desktop layout skips landing page
+    if (typeof window === 'undefined') return false;
+    // Use 1024px to match CSS breakpoint for mobile menu
+    const isSmallScreen = window.matchMedia('(max-width: 1024px)').matches;
+    return !isSmallScreen;
+  });
+
+  // Determine if there is a saved game state
+  const hasSavedGame = useMemo(() => {
+    if (filename && filename !== 'Untitled Game.sgf') return true;
+    if (gameTree && rootId !== null) {
+      const root = gameTree.get(rootId);
+      if (root && (root.children.length > 0 || root.data.annotated)) {
+        return true;
+      }
+    }
+    return false;
+  }, [gameTree, rootId, filename]);
+
+  // If desktop layout (large screen), always consider started
+  useEffect(() => {
+    if (!isMobileOrTablet) {
+      setHasStarted(true);
+    }
+  }, [isMobileOrTablet]);
+
+  const handleNewGame = useCallback(() => {
+    createNewGame();
+    setHasStarted(true);
+  }, [createNewGame]);
+
+  const handleContinue = useCallback(() => {
+    setHasStarted(true);
+  }, []);
+
+  const handleOpenLibrary = useCallback(() => {
+    setHasStarted(true);
+    setTimeout(() => {
+      if (!showLibrary) {
+        toggleLibrary();
+      }
+    }, 100);
+  }, [showLibrary, toggleLibrary]);
+
+  const handleGoHome = useCallback(() => {
+    setHasStarted(false);
+  }, []);
+
+  const handleFileDrop = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const content = e.target?.result as string;
+        if (content) {
+          loadSGFAsync(content);
+          setFileName(file.name);
+          setHasStarted(true);
+        }
+      };
+      reader.readAsText(file);
+    },
+    [loadSGFAsync, setFileName]
+  );
 
   const [scoreData, setScoreData] = useState<ScoreData | null>(null);
 
@@ -154,6 +232,20 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Show landing page on mobile/tablet layout
+  if (isMobileOrTablet && !hasStarted) {
+    return (
+      <LandingPage
+        onNewGame={handleNewGame}
+        onContinue={handleContinue}
+        onOpenLibrary={handleOpenLibrary}
+        onFileDrop={handleFileDrop}
+        version={versionData?.version}
+        hasSavedGame={hasSavedGame}
+      />
+    );
+  }
+
   return (
     <AppDropZone>
       <div className="app">
@@ -165,6 +257,7 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
             onToggleLibrary={toggleLibrary}
             onToggleSidebar={() => setShowSidebar(prev => !prev)}
             onHide={() => setShowHeader(false)}
+            onGoHome={handleGoHome}
           />
         ) : (
           <div

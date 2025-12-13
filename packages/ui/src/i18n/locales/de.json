@@ -213,14 +213,6 @@
     "updateFailedMessage": "Update-Installation fehlgeschlagen. Bitte später erneut versuchen oder die neueste Version manuell herunterladen:"
   },
 
-  "landing": {
-    "tagline": "Elegante Go-App",
-    "continue": "Fortsetzen",
-    "newGame": "Neues Spiel",
-    "library": "Bibliothek",
-    "dropSgfToOpen": "SGF-Datei hierher ziehen zum Öffnen"
-  },
-
   "editToolbar": {
     "stones": "Steine",
     "playMode": "Spielmodus",

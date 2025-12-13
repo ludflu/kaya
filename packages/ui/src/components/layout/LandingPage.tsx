@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { LuPlay, LuFolderOpen, LuLibrary } from 'react-icons/lu';
-import { AppDropZone } from '@kaya/ui';
+import { AppDropZone } from '../file/AppDropZone';
 import './LandingPage.css';
 
-interface LandingPageProps {
+export interface LandingPageProps {
   onNewGame: () => void;
   onContinue?: () => void;
   onOpenLibrary: () => void;

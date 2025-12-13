@@ -213,14 +213,6 @@
     "updateFailedMessage": "Error al instalar la actualización. Por favor, inténtalo de nuevo más tarde o descarga la última versión manualmente:"
   },
 
-  "landing": {
-    "tagline": "Aplicación elegante de Go",
-    "continue": "Continuar",
-    "newGame": "Nueva partida",
-    "library": "Biblioteca",
-    "dropSgfToOpen": "Arrastra un archivo SGF para abrirlo"
-  },
-
   "editToolbar": {
     "stones": "Piedras",
     "playMode": "Modo juego",

@@ -213,14 +213,6 @@
     "updateFailedMessage": "업데이트 설치에 실패했습니다. 나중에 다시 시도하거나 최신 버전을 수동으로 다운로드하세요:"
   },
 
-  "landing": {
-    "tagline": "우아한 바둑 앱",
-    "continue": "계속하기",
-    "newGame": "새 대국",
-    "library": "라이브러리",
-    "dropSgfToOpen": "SGF 파일을 드롭하여 열기"
-  },
-
   "editToolbar": {
     "stones": "돌",
     "playMode": "대국 모드",

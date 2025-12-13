@@ -213,14 +213,6 @@
     "updateFailedMessage": "Failed to install the update. Please try again later or download the latest version manually from:"
   },
 
-  "landing": {
-    "tagline": "Elegant Go Game",
-    "continue": "Continue",
-    "newGame": "New Game",
-    "library": "Library",
-    "dropSgfToOpen": "Drop SGF file to open"
-  },
-
   "editToolbar": {
     "stones": "Stones",
     "playMode": "Play mode",

@@ -213,14 +213,6 @@
     "updateFailedMessage": "アップデートのインストールに失敗しました。後で再試行するか、手動で最新版をダウンロードしてください："
   },
 
-  "landing": {
-    "tagline": "エレガントな囲碁アプリ",
-    "continue": "続ける",
-    "newGame": "新規対局",
-    "library": "ライブラリ",
-    "dropSgfToOpen": "SGFファイルをドロップして開く"
-  },
-
   "editToolbar": {
     "stones": "石",
     "playMode": "対局モード",

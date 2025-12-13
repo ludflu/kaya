@@ -32,8 +32,8 @@ import {
   type GameTreeGraphRef,
   useLayoutMode, // Added import
   type MobileTab,
+  LandingPage,
 } from '@kaya/ui';
-import { LandingPage } from './LandingPage'; // Added import
 
 function WebUpdater({ currentVersion }: { currentVersion: VersionData | undefined }) {
   const [hasUpdate, setHasUpdate] = useState(false);

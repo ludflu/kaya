@@ -213,14 +213,6 @@
     "updateFailedMessage": "Échec de l'installation. Téléchargez manuellement depuis :"
   },
 
-  "landing": {
-    "tagline": "Jeu de Go élégant",
-    "continue": "Continuer",
-    "newGame": "Nouvelle partie",
-    "library": "Bibliothèque",
-    "dropSgfToOpen": "Déposez un fichier SGF pour l'ouvrir"
-  },
-
   "editToolbar": {
     "stones": "Pierres",
     "playMode": "Mode jeu",

@@ -213,13 +213,6 @@
     "updateFailedMessage": "安装更新失败。请稍后重试或从以下地址手动下载最新版本："
   },
 
-  "landing": {
-    "tagline": "优雅的围棋应用",
-    "continue": "继续",
-    "newGame": "新对局",
-    "library": "棋库",
-    "dropSgfToOpen": "拖放 SGF 文件以打开"
-  },
 
   "editToolbar": {
     "stones": "棋子",
