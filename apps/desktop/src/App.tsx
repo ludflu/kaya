@@ -1,0 +1,366 @@
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  Header,
+  ResizableLayout,
+  GameBoard,
+  GameTreeGraph,
+  GameTreeControls,
+  GameTreeProvider,
+  BoardNavigationProvider,
+  GameControllerManagerProvider,
+  AIAnalysisProvider,
+  AppDropZone,
+  GameInfoEditor,
+  GameInfoHeaderActions,
+  useGameInfoEditMode,
+  CommentEditor,
+  CommentHeaderActions,
+  useCommentEditorState,
+  LoadingOverlay,
+  StatusBar,
+  useGameTree,
+  ScoreEstimator,
+  AnalysisGraphPanel,
+  type VersionData,
+  type ScoreData,
+  ToastProvider,
+  useToast,
+  LibraryProvider,
+  LibraryPanel,
+  useLibraryPanel,
+  TauriDragProvider,
+  type GameTreeGraphRef,
+  useExternalLinks,
+} from '@kaya/ui';
+import { analytics } from './analytics';
+import { Updater } from './Updater';
+
+function AppContent({ versionData }: { versionData: VersionData | undefined }) {
+  // Enable external links to open in default browser
+  useExternalLinks();
+
+  // Library panel state
+  const { showLibrary, toggleLibrary } = useLibraryPanel();
+
+  // Ref for game tree graph to control centering
+  const gameTreeRef = useRef<GameTreeGraphRef>(null);
+
+  // Load saved layout preference from localStorage
+  const [treeLayoutHorizontal, setTreeLayoutHorizontal] = useState(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('kaya-tree-layout-horizontal');
+      return saved !== null ? saved === 'true' : false; // Default: vertical
+    }
+    return false;
+  });
+
+  // Load saved minimap preference from localStorage
+  const [showMinimap, setShowMinimap] = useState(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('kaya-tree-show-minimap');
+      return saved === 'true';
+    }
+    return false;
+  });
+
+  // Save layout preference when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('kaya-tree-layout-horizontal', String(treeLayoutHorizontal));
+    }
+  }, [treeLayoutHorizontal]);
+
+  // Save minimap preference when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('kaya-tree-show-minimap', String(showMinimap));
+    }
+  }, [showMinimap]);
+
+  // Track initial page view
+  useEffect(() => {
+    analytics.pageView('Home');
+  }, []);
+
+  const {
+    moveName,
+    moveUrl,
+    patternMatchingEnabled,
+    togglePatternMatching,
+    scoringMode,
+    deadStones,
+    gameInfo,
+  } = useGameTree();
+
+  const [scoreData, setScoreData] = useState<ScoreData | null>(null);
+
+  // Header visibility state
+  const [showHeader, setShowHeader] = useState(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('kaya-show-header');
+      return saved !== null ? saved === 'true' : true;
+    }
+    return true;
+  });
+
+  // Sidebar visibility state
+  const [showSidebar, setShowSidebar] = useState(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const saved = localStorage.getItem('kaya-show-sidebar');
+      return saved !== null ? saved === 'true' : true;
+    }
+    return true;
+  });
+
+  // Game info editor state for header actions
+  const { isEditMode: gameInfoEditMode, toggleEditMode: toggleGameInfoEditMode } =
+    useGameInfoEditMode();
+
+  // Comment editor state for header actions
+  const {
+    moveNumber,
+    isEditing: isCommentEditing,
+    handleEdit,
+    handleSave,
+    handleCancel,
+  } = useCommentEditorState();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('kaya-show-header', String(showHeader));
+    }
+  }, [showHeader]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('kaya-show-sidebar', String(showSidebar));
+    }
+  }, [showSidebar]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Toggle header with Ctrl+Shift+M or Cmd+Shift+M
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'm') {
+        e.preventDefault();
+        setShowHeader(prev => !prev);
+      }
+      // Toggle sidebar with Ctrl+Shift+B or Cmd+Shift+B
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setShowSidebar(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  return (
+    <AppDropZone>
+      <div className="app">
+        {showHeader ? (
+          <Header
+            showThemeToggle={true}
+            showLibrary={showLibrary}
+            showSidebar={showSidebar}
+            onToggleLibrary={toggleLibrary}
+            onToggleSidebar={() => setShowSidebar(prev => !prev)}
+            onHide={() => setShowHeader(false)}
+          />
+        ) : (
+          <div
+            onClick={() => setShowHeader(true)}
+            title="Show Menu (Cmd/Ctrl+Shift+M)"
+            style={{
+              height: '12px',
+              width: '100%',
+              background: 'var(--bg-tertiary)',
+              borderBottom: '1px solid var(--border-color)',
+              cursor: 'pointer',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              transition: 'background-color 0.2s',
+              flexShrink: 0,
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)';
+            }}
+          >
+            <div
+              style={{
+                width: '48px',
+                height: '4px',
+                borderRadius: '2px',
+                background: 'var(--border-color)',
+                opacity: 0.6,
+              }}
+            />
+          </div>
+        )}
+        <div className="app-main">
+          <ResizableLayout
+            showLibrary={showLibrary}
+            onToggleLibrary={toggleLibrary}
+            libraryContent={<LibraryPanel />}
+            analysisGraphContent={<AnalysisGraphPanel />}
+            showSidebar={showSidebar}
+            onToggleSidebar={() => setShowSidebar(prev => !prev)}
+            boardContent={<GameBoard onScoreData={setScoreData} />}
+            gameTreeContent={
+              scoringMode && scoreData ? (
+                <div style={{ padding: '1rem' }}>
+                  <ScoreEstimator
+                    scoreData={scoreData}
+                    deadStones={deadStones}
+                    playerBlack={gameInfo.playerBlack}
+                    playerWhite={gameInfo.playerWhite}
+                    rankBlack={gameInfo.rankBlack}
+                    rankWhite={gameInfo.rankWhite}
+                  />
+                </div>
+              ) : (
+                <GameTreeGraph
+                  ref={gameTreeRef}
+                  horizontal={treeLayoutHorizontal}
+                  onLayoutChange={setTreeLayoutHorizontal}
+                  showMinimap={showMinimap}
+                />
+              )
+            }
+            gameTreeHeaderActions={
+              scoringMode ? null : (
+                <GameTreeControls
+                  horizontal={treeLayoutHorizontal}
+                  onToggleLayout={() => setTreeLayoutHorizontal(h => !h)}
+                  showMinimap={showMinimap}
+                  onToggleMinimap={() => setShowMinimap(m => !m)}
+                  onCenterOnCurrentNode={() => gameTreeRef.current?.centerOnCurrentNode()}
+                />
+              )
+            }
+            gameInfoHeaderActions={
+              <GameInfoHeaderActions
+                isEditMode={gameInfoEditMode}
+                onToggle={toggleGameInfoEditMode}
+              />
+            }
+            commentHeaderActions={
+              <CommentHeaderActions
+                moveNumber={moveNumber}
+                isEditing={isCommentEditing}
+                onEdit={handleEdit}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            }
+            gameInfoContent={
+              <GameInfoEditor
+                isEditMode={gameInfoEditMode}
+                onEditModeChange={toggleGameInfoEditMode}
+              />
+            }
+            commentContent={<CommentEditor />}
+          />
+        </div>
+        <LoadingOverlay />
+        <StatusBar
+          versionData={versionData}
+          moveName={moveName}
+          moveUrl={moveUrl}
+          patternMatchingEnabled={patternMatchingEnabled}
+          onTogglePatternMatching={togglePatternMatching}
+        />
+      </div>
+    </AppDropZone>
+  );
+}
+
+function App() {
+  const [versionData, setVersionData] = useState<VersionData | undefined>(undefined);
+
+  useEffect(() => {
+    // For desktop app, version.json is in the dist root
+    fetch('/version.json')
+      .then(res => res.json())
+      .then(data => {
+        console.log('Version info:', data);
+        setVersionData(data);
+      })
+      .catch(err => {
+        console.warn('Could not load version info:', err);
+      });
+  }, []);
+
+  return (
+    <>
+      <Updater />
+      <ToastProvider>
+        <AppWithToast versionData={versionData} />
+      </ToastProvider>
+    </>
+  );
+}
+
+function AppWithToast({ versionData }: { versionData: VersionData | undefined }) {
+  const { showToast } = useToast();
+
+  const handleAutoSaveDisabled = useCallback(() => {
+    showToast('Game is too large for auto-save (max 5MB)', 'info');
+  }, [showToast]);
+
+  return (
+    <GameControllerManagerProvider>
+      <GameTreeProvider onAutoSaveDisabled={handleAutoSaveDisabled}>
+        <AIAnalysisProvider>
+          <BoardNavigationProvider>
+            <LibraryProviderWrapper versionData={versionData} />
+          </BoardNavigationProvider>
+        </AIAnalysisProvider>
+      </GameTreeProvider>
+    </GameControllerManagerProvider>
+  );
+}
+
+function LibraryProviderWrapper({ versionData }: { versionData: VersionData | undefined }) {
+  const { loadSGFAsync, exportSGF, setFileName, isDirty, setIsDirty } = useGameTree();
+
+  // Callback when a file is opened from the library
+  const handleFileOpen = useCallback(
+    (content: string, name: string) => {
+      loadSGFAsync(content);
+      setFileName(name);
+    },
+    [loadSGFAsync, setFileName]
+  );
+
+  // Get current game content for saving to library
+  const getCurrentGameContent = useCallback(() => {
+    return exportSGF();
+  }, [exportSGF]);
+
+  // Check if there are unsaved changes
+  const getIsDirty = useCallback(() => isDirty, [isDirty]);
+
+  // Reset dirty state after save
+  const handleSaveComplete = useCallback(() => {
+    setIsDirty(false);
+  }, [setIsDirty]);
+
+  return (
+    <LibraryProvider
+      onFileOpen={handleFileOpen}
+      getCurrentGameContent={getCurrentGameContent}
+      getIsDirty={getIsDirty}
+      onSaveComplete={handleSaveComplete}
+    >
+      <TauriDragProvider>
+        <AppContent versionData={versionData} />
+      </TauriDragProvider>
+    </LibraryProvider>
+  );
+}
+
+export default App;

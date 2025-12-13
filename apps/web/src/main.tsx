@@ -1,0 +1,28 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { ThemeProvider, I18nProvider } from '@kaya/ui';
+import App from './App.tsx';
+import '@kaya/ui/dist/styles/ui.css';
+
+// Suppress benign ResizeObserver warning from react-resizable-panels
+// This is a common timing issue and doesn't affect functionality
+const resizeObserverErr = window.console.error;
+window.console.error = (...args: unknown[]) => {
+  if (
+    typeof args[0] === 'string' &&
+    args[0].includes('ResizeObserver loop completed with undelivered notifications')
+  ) {
+    return;
+  }
+  resizeObserverErr(...args);
+};
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <I18nProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    </I18nProvider>
+  </StrictMode>
+);

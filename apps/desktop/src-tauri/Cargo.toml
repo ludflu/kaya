@@ -1,0 +1,41 @@
+[package]
+name = "kaya"
+version = "0.0.18-dev"
+description = "A beautiful Go game application with AI analysis powered by KataGo"
+authors = ["Kaya Team"]
+license = "AGPL-3.0"
+repository = "https://github.com/kaya-go/kaya"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["devtools"] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-http = "2"
+tauri-plugin-process = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-updater = "2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["full"] }
+reqwest = { version = "0.12", features = ["stream"] }
+futures = "0.3"
+tauri-plugin-window-state = "2.4.1"
+
+# ONNX Runtime for native AI inference
+ort = { version = "2.0.0-rc.10", features = ["download-binaries"] }
+ndarray = "0.16"
+base64 = "0.22"
+
+# Optimize release builds for smaller binary and faster CI
+[profile.release]
+# Enable LTO for smaller binary (thin is faster than full LTO)
+lto = "thin"
+# Strip debug info for smaller binary
+strip = true
+# Use multiple codegen units for faster parallel compilation
+# Trade-off: slightly larger binary but much faster builds
+codegen-units = 16

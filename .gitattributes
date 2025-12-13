@@ -1,0 +1,59 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Source code
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.rs text eol=lf
+
+# SVG files (treat as text for better diffing)
+*.svg text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.mp3 binary
+*.wav binary
+*.wasm binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+
+# Archives
+*.zip binary
+*.tar binary
+*.gz binary
+*.7z binary
+*.dmg binary
+*.AppImage binary
+*.deb binary
+*.rpm binary
+
+# Compiled files
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+
+# Exclude files from exports
+.github export-ignore
+docs export-ignore
+scripts export-ignore
+tests export-ignore
+.gitattributes export-ignore
+.gitignore export-ignore
+.prettierrc export-ignore
+.markdownlint.json export-ignore

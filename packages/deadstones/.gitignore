@@ -1,0 +1,6 @@
+dist/
+wasm/
+target/
+*.wasm
+*.d.ts
+!src/**/*.d.ts

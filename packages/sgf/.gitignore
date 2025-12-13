@@ -1,0 +1,9 @@
+# Debug files (not committed)
+__debug__/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/

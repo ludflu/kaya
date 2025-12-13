@@ -1,0 +1,51 @@
+{
+  "name": "@kaya/desktop",
+  "version": "0.0.18-dev",
+  "private": true,
+  "description": "Kaya desktop application",
+  "type": "module",
+  "scripts": {
+    "dev": "rsbuild dev",
+    "build": "bun run --cwd ../.. generate-version-info && bun run --cwd ../.. copy-assets && bun run --cwd ../.. build:packages && rsbuild build",
+    "preview": "rsbuild preview",
+    "type-check": "tsc --build --force",
+    "lint": "eslint src --ext ts,tsx",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
+  },
+  "dependencies": {
+    "@dagrejs/dagre": "^2.0.0",
+    "@dagrejs/graphlib": "^2.2.4",
+    "@kaya/gametree": "workspace:*",
+    "@kaya/goboard": "workspace:*",
+    "@kaya/gtp": "workspace:*",
+    "@kaya/sgf": "workspace:*",
+    "@kaya/shudan": "workspace:*",
+    "@kaya/ui": "workspace:*",
+    "@tauri-apps/api": "^2.0.0",
+    "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@tauri-apps/plugin-fs": "^2.0.0",
+    "@tauri-apps/plugin-http": "^2.0.0",
+    "@tauri-apps/plugin-process": "^2.3.1",
+    "@tauri-apps/plugin-shell": "^2.0.0",
+    "@tauri-apps/plugin-updater": "^2.9.0",
+    "coi-serviceworker": "^0.1.7",
+    "i18next": "^25.1.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-i18next": "^15.4.1",
+    "react-markdown": "^10.1.0",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@rsbuild/core": "^1.1.14",
+    "@rsbuild/plugin-react": "^1.1.5",
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "typescript": "^5.6.0"
+  }
+}

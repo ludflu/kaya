@@ -1,0 +1,500 @@
+name: Release
+
+run-name: Release v${{ github.event.inputs.version }}
+
+# Only manual trigger - creates tag, builds, and releases all in one workflow
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.1.0) - without v prefix'
+        required: true
+        type: string
+
+env:
+  BUN_VERSION: '1.3.2'
+
+jobs:
+  # First verify everything builds correctly
+  verify:
+    name: Verify Build Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-cache-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-cache-
+
+      - name: Install dependencies
+        run: bun install
+
+      # Install Rust for WASM compilation
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache wasm-pack
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/wasm-pack*
+          key: ${{ runner.os }}-wasm-pack-0.13
+
+      - name: Install wasm-pack
+        run: command -v wasm-pack || curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Set version to ${{ github.event.inputs.version }}
+        run: bun run set-version ${{ github.event.inputs.version }}
+
+      - name: Check formatting
+        run: bun run format:check
+
+      # Build packages first so type declarations are available
+      - name: Build packages
+        run: bun run build:packages
+
+      - name: Type check
+        run: bun run type-check
+
+      - name: Run tests
+        run: bun run test
+
+      - name: ✅ Verification passed
+        run: echo "All quality checks passed! Ready to build and release."
+
+  deploy-web:
+    name: Deploy Web App (Stable)
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      NODE_ENV: production
+      ASSET_PREFIX: /kaya/
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-cache-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-cache-
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache wasm-pack
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/wasm-pack*
+          key: ${{ runner.os }}-wasm-pack-0.13
+
+      - name: Install wasm-pack
+        run: command -v wasm-pack || curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Set version to ${{ github.event.inputs.version }}
+        run: bun run set-version ${{ github.event.inputs.version }}
+
+      - name: Build packages
+        run: bun run build:packages
+
+      - name: Build Web App
+        run: bun run build:web
+
+      # Robust deployment: checkout gh-pages, clean root (keep next/), copy new build
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Clean root and copy new build (preserve next/)
+        run: |
+          # Save next/ folder if it exists
+          if [ -d gh-pages/next ]; then
+            mv gh-pages/next /tmp/next-backup
+          fi
+          # Clean everything in gh-pages
+          rm -rf gh-pages/*
+          # Copy new build
+          cp -r apps/web/dist/* gh-pages/
+          # Restore next/ folder
+          if [ -d /tmp/next-backup ]; then
+            mv /tmp/next-backup gh-pages/next
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./gh-pages
+          keep_files: false
+
+  build-desktop:
+    name: Build Desktop - ${{ matrix.platform }}
+    needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-cache-${{ hashFiles('**/bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-cache-
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Compute Rust cache keys
+        id: rust_keys
+        shell: bash
+        run: |
+          RUSTC_HASH=$(rustc -vV | sed -n 's/^commit-hash: //p')
+          echo "rustc_hash=$RUSTC_HASH" >> "$GITHUB_OUTPUT"
+
+      # Speed up Rust builds across releases without caching final binaries:
+      # - sccache caches compilation outputs per crate
+      # - cargo/target caches are keyed off Cargo.lock (NOT Cargo.toml), so version bumps won't bust caches
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Configure Rust build cache env
+        id: sccache_config
+        shell: bash
+        run: |
+          # Use platform-appropriate home directory
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            SCCACHE_DIR="$USERPROFILE/.cache/sccache"
+          else
+            SCCACHE_DIR="$HOME/.cache/sccache"
+          fi
+
+          echo "SCCACHE_DIR=$SCCACHE_DIR" >> "$GITHUB_ENV"
+          echo "SCCACHE_CACHE_SIZE=2G" >> "$GITHUB_ENV"
+
+          # Output for cache step (convert to unix-style path for consistency)
+          echo "cache_path=$SCCACHE_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Restore sccache cache
+        id: sccache_cache
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: ${{ steps.sccache_config.outputs.cache_path }}
+          key: ${{ runner.os }}-sccache-${{ steps.rust_keys.outputs.rustc_hash }}-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock', 'packages/deadstones/src-rust/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-${{ steps.rust_keys.outputs.rustc_hash }}-
+            ${{ runner.os }}-sccache-
+
+      - name: Enable sccache (strict)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! command -v sccache >/dev/null 2>&1; then
+            echo "sccache not found on PATH" >&2
+            exit 1
+          fi
+
+          mkdir -p "$SCCACHE_DIR"
+          sccache --start-server
+
+          echo "RUSTC_WRAPPER=sccache" >> "$GITHUB_ENV"
+
+      - name: Restore Cargo registry/git cache
+        id: cargo_cache
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-${{ steps.rust_keys.outputs.rustc_hash }}-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock', 'packages/deadstones/src-rust/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ steps.rust_keys.outputs.rustc_hash }}-
+            ${{ runner.os }}-cargo-
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf mold
+
+      - name: Install dependencies
+        run: bun install
+
+      # Cache wasm-pack binary to avoid redownloading
+      - name: Cache wasm-pack
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/wasm-pack*
+            ~/wasm-pack-*
+          key: ${{ runner.os }}-wasm-pack-0.13
+
+      - name: Install wasm-pack
+        shell: bash
+        run: |
+          if ! command -v wasm-pack &> /dev/null; then
+            curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+          fi
+
+      - name: Add Rust targets (macOS)
+        if: matrix.platform == 'macos-latest'
+        run: rustup target add x86_64-apple-darwin aarch64-apple-darwin
+
+      - name: Set version to ${{ github.event.inputs.version }}
+        run: bun run set-version ${{ github.event.inputs.version }}
+
+      - name: Build desktop app (Linux)
+        if: matrix.platform == 'ubuntu-latest'
+        run: bun run tauri:build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
+
+      - name: Build desktop app (Windows)
+        if: matrix.platform == 'windows-latest'
+        run: bun run tauri:build
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
+
+      - name: Build desktop app (macOS Universal)
+        if: matrix.platform == 'macos-latest'
+        run: bun run tauri:build -- --target universal-apple-darwin
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_KEY_PASSWORD }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: |
+            apps/desktop/src-tauri/target/release/bundle/
+            apps/desktop/src-tauri/target/universal-apple-darwin/release/bundle/
+
+      # Save caches only when they were not found (avoids multi-minute cache uploads on every release run)
+      - name: Save Cargo registry/git cache (if miss)
+        if: steps.cargo_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+          key: ${{ steps.cargo_cache.outputs.cache-primary-key }}
+
+      - name: Save sccache cache (if miss)
+        if: steps.sccache_cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: ${{ steps.sccache_config.outputs.cache_path }}
+          key: ${{ steps.sccache_cache.outputs.cache-primary-key }}
+
+  # Commit version bump and create release ONLY after successful builds
+  commit-and-release:
+    name: Commit Version & Create Release
+    needs: [build-desktop, deploy-web]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Set version to ${{ github.event.inputs.version }}
+        run: bun run set-version ${{ github.event.inputs.version }}
+
+      - name: Generate changelog from commits
+        id: changelog
+        run: |
+          # Generate full changelog (skip_tags in cliff.toml handles old versions)
+          bun run git-cliff --tag "v${{ github.event.inputs.version }}" -o CHANGELOG.md
+
+          # Generate release notes for this version only
+          bun run git-cliff --tag "v${{ github.event.inputs.version }}" --unreleased --strip header -o CHANGELOG-NEW.md
+
+          # Read the generated changelog for GitHub release
+          CHANGELOG=$(cat CHANGELOG-NEW.md)
+
+          # Escape for GitHub output (handle multiline)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Remove temporary file
+          rm CHANGELOG-NEW.md
+
+      - name: Commit and push version changes + changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Format files before committing (fixes CHANGELOG.md issues)
+          bun run format
+
+          git add .
+          git commit -m "chore: release v${{ github.event.inputs.version }}"
+          git pull --rebase
+          git push
+
+      - name: Create and push tag
+        run: |
+          git tag -a "v${{ github.event.inputs.version }}" -m "Release v${{ github.event.inputs.version }}"
+          git push origin "v${{ github.event.inputs.version }}"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+
+      - name: Generate updater JSON
+        run: |
+          # Generate latest.json for Tauri updater
+          bun run generate-updater-json "${{ github.event.inputs.version }}" "${{ steps.changelog.outputs.changelog }}"
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: Release v${{ github.event.inputs.version }}
+          files: |
+            desktop-macos-latest/**/*.dmg
+            desktop-macos-latest/**/*.dmg.sig
+            desktop-macos-latest/**/*.app.tar.gz
+            desktop-macos-latest/**/*.app.tar.gz.sig
+            desktop-ubuntu-latest/**/*.deb
+            desktop-ubuntu-latest/**/*.AppImage
+            desktop-ubuntu-latest/**/*.AppImage.sig
+            desktop-windows-latest/**/*.msi
+            desktop-windows-latest/**/*.msi.sig
+            desktop-windows-latest/**/*.exe
+            desktop-windows-latest/**/*.exe.sig
+            latest.json
+          draft: true
+          body: |
+            ${{ steps.changelog.outputs.changelog }}
+
+            ---
+
+            ## Downloads
+
+            | Platform | Installer | Signature |
+            | -------- | --------- | --------- |
+            | **macOS** (Universal) | [.dmg](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_universal.dmg) | [.sig](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_universal.dmg.sig) |
+            | **Windows** (x64) | [.exe](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_x64-setup.exe) | [.sig](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_x64-setup.exe.sig) |
+            | **Windows** (MSI) | [.msi](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_x64_en-US.msi) | [.sig](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_x64_en-US.msi.sig) |
+            | **Linux** (AppImage) | [.AppImage](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_amd64.AppImage) | [.sig](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/Kaya_${{ github.event.inputs.version }}_amd64.AppImage.sig) |
+            | **Linux** (Debian) | [.deb](https://github.com/kaya-go/kaya/releases/download/v${{ github.event.inputs.version }}/kaya_${{ github.event.inputs.version }}_amd64.deb) | - |
+
+            ## Installation
+
+            Download the appropriate file for your platform and follow the installation instructions.
+
+            ### macOS Users
+
+            If you see a "damaged" or "unidentified developer" warning:
+            1. Install the app to your **Applications** folder.
+            2. Open Terminal and run: `xattr -cr /Applications/Kaya.app`
+            3. Launch the app.
+
+  bump-dev-version:
+    name: Bump to Next Dev Version
+    needs: commit-and-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          CURRENT_VERSION="${{ github.event.inputs.version }}"
+          # Split into parts
+          IFS='.' read -r -a parts <<< "$CURRENT_VERSION"
+          MAJOR="${parts[0]}"
+          MINOR="${parts[1]}"
+          PATCH="${parts[2]}"
+
+          # Increment patch
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="$MAJOR.$MINOR.$NEXT_PATCH-dev"
+
+          echo "Next version: $NEXT_VERSION"
+          echo "version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set version to next dev
+        run: bun run set-version ${{ steps.next_version.outputs.version }}
+
+      - name: Commit and push dev bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "chore: bump version to ${{ steps.next_version.outputs.version }}"
+          git pull --rebase
+          git push
