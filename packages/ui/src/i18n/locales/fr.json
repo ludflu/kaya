@@ -87,7 +87,7 @@
   "paste": "Coller",
 
   "aiConfig": {
-    "title": "Configuration IA",
+    "title": "Configuration de l'analyse",
     "modelLibrary": "Bibliothèque de modèles",
     "modelLibraryDescription": "Téléchargez ou importez des modèles ONNX. Cliquez sur un modèle téléchargé pour le sélectionner.",
     "active": "Actif",
