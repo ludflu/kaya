@@ -1,5 +1,13 @@
 {
   "addToLibrary": "Aggiungi alla libreria",
+
+  "landing": {
+    "tagline": "Un'applicazione moderna per il Go",
+    "continue": "Continua partita",
+    "newGame": "Nuova partita",
+    "library": "Libreria",
+    "dropSgfToOpen": "Trascina un file SGF"
+  },
   "black": "Nero:",
   "boardSettings": "Impostazioni tavola",
   "boardSize": "Dimensione tavola:",
@@ -219,7 +227,9 @@
     "setupMode": "Modalità configurazione",
     "alternate": "Alternato",
     "blackStone": "Nero",
+    "black": "Nero",
     "whiteStone": "Bianco",
+    "white": "Bianco",
     "pass": "Passa",
     "clearSetupStones": "Cancella pietre configurazione",
     "markers": "Marcatori",
@@ -234,7 +244,9 @@
     "branch": "Variante",
     "makeMainBranch": "Rendi variante principale",
     "copyBranch": "Copia",
+    "copy": "Copia",
     "pasteBranch": "Incolla",
+    "paste": "Incolla",
     "deleteCurrentBranch": "Elimina variante corrente",
     "deleteOtherBranches": "Elimina altre varianti (mantieni solo linea corrente)",
     "history": "Cronologia",
@@ -313,6 +325,14 @@
   "scoring": {
     "clear": "Cancella",
     "clearAllDeadStones": "Cancella tutte le pietre morte",
+    "territoryBlackTitle": "Territorio nero",
+    "territoryWhiteTitle": "Territorio bianco",
+    "capturesBlackTitle": "Catture nere",
+    "capturesWhiteTitle": "Catture bianche",
+    "deadStonesBlackTitle": "Pietre nere morte",
+    "deadStonesWhiteTitle": "Pietre bianche morte",
+    "komiTitle": "Komi (compensazione bianco)",
+    "markedAsDead": "{{count}} pietra/e segnata/e come morta/e",
     "autoEstimate": "Stima automatica",
     "autoEstimateDescription": "Usa simulazione Monte Carlo per rilevare automaticamente le pietre morte",
     "estimating": "Stimando...",

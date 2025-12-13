@@ -1,5 +1,13 @@
 {
   "addToLibrary": "라이브러리에 추가",
+
+  "landing": {
+    "tagline": "현대적인 바둑 애플리케이션",
+    "continue": "대국 계속하기",
+    "newGame": "새 대국",
+    "library": "기보 라이브러리",
+    "dropSgfToOpen": "SGF 파일을 드롭하여 열기"
+  },
   "black": "흑:",
   "boardSettings": "바둑판 설정",
   "boardSize": "바둑판 크기:",
@@ -219,7 +227,9 @@
     "setupMode": "배치 모드",
     "alternate": "교대",
     "blackStone": "흑",
+    "black": "흙",
     "whiteStone": "백",
+    "white": "백",
     "pass": "패스",
     "clearSetupStones": "배치 돌 지우기",
     "markers": "마커",
@@ -234,7 +244,9 @@
     "branch": "변화",
     "makeMainBranch": "주변화로 설정",
     "copyBranch": "복사",
+    "copy": "복사",
     "pasteBranch": "붙여넣기",
+    "paste": "붙여넣기",
     "deleteCurrentBranch": "현재 변화 삭제",
     "deleteOtherBranches": "다른 변화 삭제 (현재 수순만 유지)",
     "history": "기록",
@@ -316,6 +328,14 @@
   "scoring": {
     "clear": "지우기",
     "clearAllDeadStones": "모든 죽은 돌 지우기",
+    "territoryBlackTitle": "흙의 집",
+    "territoryWhiteTitle": "백의 집",
+    "capturesBlackTitle": "흙이 잡은 돌",
+    "capturesWhiteTitle": "백이 잡은 돌",
+    "deadStonesBlackTitle": "흙의 죽은 돌",
+    "deadStonesWhiteTitle": "백의 죽은 돌",
+    "komiTitle": "덤 (백의 보상)",
+    "markedAsDead": "{{count}}개의 돌이 죽은 것으로 표시됨",
     "autoEstimate": "자동 판정",
     "autoEstimateDescription": "몬테카를로 시뮬레이션으로 죽은 돌 자동 판정",
     "estimating": "판정 중...",

@@ -1,5 +1,13 @@
 {
   "addToLibrary": "Add to Library",
+
+  "landing": {
+    "tagline": "A modern Go game application",
+    "continue": "Continue Game",
+    "newGame": "New Game",
+    "library": "Game Library",
+    "dropSgfToOpen": "Drop SGF file to open"
+  },
   "black": "Black:",
   "boardSettings": "Board Settings",
   "boardSize": "Board Size:",
@@ -219,7 +227,9 @@
     "setupMode": "Setup mode",
     "alternate": "Alternate",
     "blackStone": "Black",
+    "black": "Black",
     "whiteStone": "White",
+    "white": "White",
     "pass": "Pass",
     "clearSetupStones": "Clear Setup Stones",
     "markers": "Markers",
@@ -234,7 +244,9 @@
     "branch": "Branch",
     "makeMainBranch": "Make Main Branch",
     "copyBranch": "Copy",
+    "copy": "Copy",
     "pasteBranch": "Paste",
+    "paste": "Paste",
     "deleteCurrentBranch": "Delete Current Branch",
     "deleteOtherBranches": "Delete Other Branches (keep only current path)",
     "history": "History",
@@ -316,6 +328,14 @@
   "scoring": {
     "clear": "Clear",
     "clearAllDeadStones": "Clear all dead stones",
+    "territoryBlackTitle": "Black territory",
+    "territoryWhiteTitle": "White territory",
+    "capturesBlackTitle": "Black captures",
+    "capturesWhiteTitle": "White captures",
+    "deadStonesBlackTitle": "Black dead stones",
+    "deadStonesWhiteTitle": "White dead stones",
+    "komiTitle": "Komi (White's compensation)",
+    "markedAsDead": "{{count}} stone(s) marked as dead",
     "autoEstimate": "Auto-estimate",
     "autoEstimateDescription": "Auto-estimate dead stones using Monte Carlo simulation",
     "estimating": "Estimating...",

@@ -1,5 +1,13 @@
 {
   "addToLibrary": "添加到棋库",
+
+  "landing": {
+    "tagline": "现代围棋应用",
+    "continue": "继续对局",
+    "newGame": "新对局",
+    "library": "棋谱库",
+    "dropSgfToOpen": "拖放 SGF 文件以打开"
+  },
   "black": "黑方：",
   "boardSettings": "棋盘设置",
   "boardSize": "棋盘大小：",
@@ -219,7 +227,9 @@
     "setupMode": "设置模式",
     "alternate": "交替",
     "blackStone": "黑子",
+    "black": "黑子",
     "whiteStone": "白子",
+    "white": "白子",
     "pass": "停一手",
     "clearSetupStones": "清除设置的棋子",
     "markers": "标记",
@@ -234,7 +244,9 @@
     "branch": "分支",
     "makeMainBranch": "设为主分支",
     "copyBranch": "复制",
+    "copy": "复制",
     "pasteBranch": "粘贴",
+    "paste": "粘贴",
     "deleteCurrentBranch": "删除当前分支",
     "deleteOtherBranches": "删除其他分支（仅保留当前路径）",
     "history": "历史",
@@ -316,6 +328,14 @@
   "scoring": {
     "clear": "清除",
     "clearAllDeadStones": "清除所有死子",
+    "territoryBlackTitle": "黑方领地",
+    "territoryWhiteTitle": "白方领地",
+    "capturesBlackTitle": "黑方提子",
+    "capturesWhiteTitle": "白方提子",
+    "deadStonesBlackTitle": "黑方死子",
+    "deadStonesWhiteTitle": "白方死子",
+    "komiTitle": "贴目（白方补偿）",
+    "markedAsDead": "{{count}} 颗棋子标记为死子",
     "autoEstimate": "自动估计",
     "autoEstimateDescription": "使用蒙特卡洛模拟自动估计死子",
     "estimating": "估计中...",

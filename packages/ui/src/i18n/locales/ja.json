@@ -1,5 +1,13 @@
 {
   "addToLibrary": "ライブラリに追加",
+
+  "landing": {
+    "tagline": "モダンな囲碁アプリケーション",
+    "continue": "対局を続ける",
+    "newGame": "新規対局",
+    "library": "棋譜ライブラリ",
+    "dropSgfToOpen": "SGFファイルをドロップして開く"
+  },
   "black": "黒:",
   "boardSettings": "碁盤設定",
   "boardSize": "碁盤サイズ:",
@@ -219,7 +227,9 @@
     "setupMode": "配置モード",
     "alternate": "交互",
     "blackStone": "黒",
+    "black": "黒",
     "whiteStone": "白",
+    "white": "白",
     "pass": "パス",
     "clearSetupStones": "配置石をクリア",
     "markers": "マーカー",
@@ -234,7 +244,9 @@
     "branch": "変化",
     "makeMainBranch": "主変化に設定",
     "copyBranch": "コピー",
+    "copy": "コピー",
     "pasteBranch": "貼り付け",
+    "paste": "貼り付け",
     "deleteCurrentBranch": "現在の変化を削除",
     "deleteOtherBranches": "他の変化を削除（現在の手順のみ保持）",
     "history": "履歴",
@@ -316,6 +328,14 @@
   "scoring": {
     "clear": "クリア",
     "clearAllDeadStones": "すべての死に石をクリア",
+    "territoryBlackTitle": "黒の地",
+    "territoryWhiteTitle": "白の地",
+    "capturesBlackTitle": "黒の取り石",
+    "capturesWhiteTitle": "白の取り石",
+    "deadStonesBlackTitle": "黒の死に石",
+    "deadStonesWhiteTitle": "白の死に石",
+    "komiTitle": "コミ（白の補償）",
+    "markedAsDead": "{{count}}個の石が死に石としてマーク",
     "autoEstimate": "自動判定",
     "autoEstimateDescription": "モンテカルロシミュレーションで死に石を自動判定",
     "estimating": "判定中...",

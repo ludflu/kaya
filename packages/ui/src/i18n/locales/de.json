@@ -1,5 +1,13 @@
 {
   "addToLibrary": "Zur Bibliothek hinzufügen",
+
+  "landing": {
+    "tagline": "Eine moderne Go-Anwendung",
+    "continue": "Spiel fortsetzen",
+    "newGame": "Neues Spiel",
+    "library": "Spielbibliothek",
+    "dropSgfToOpen": "SGF-Datei zum Öffnen ablegen"
+  },
   "black": "Schwarz:",
   "boardSettings": "Brett-Einstellungen",
   "boardSize": "Brettgröße:",
@@ -219,7 +227,9 @@
     "setupMode": "Aufstellungsmodus",
     "alternate": "Abwechselnd",
     "blackStone": "Schwarz",
+    "black": "Schwarz",
     "whiteStone": "Weiß",
+    "white": "Weiß",
     "pass": "Passen",
     "clearSetupStones": "Aufstellungssteine löschen",
     "markers": "Markierungen",
@@ -234,7 +244,9 @@
     "branch": "Variante",
     "makeMainBranch": "Zur Hauptvariante machen",
     "copyBranch": "Kopieren",
+    "copy": "Kopieren",
     "pasteBranch": "Einfügen",
+    "paste": "Einfügen",
     "deleteCurrentBranch": "Aktuelle Variante löschen",
     "deleteOtherBranches": "Andere Varianten löschen (nur aktuelle Linie behalten)",
     "history": "Verlauf",
@@ -313,6 +325,14 @@
   "scoring": {
     "clear": "Löschen",
     "clearAllDeadStones": "Alle toten Steine löschen",
+    "territoryBlackTitle": "Schwarzes Gebiet",
+    "territoryWhiteTitle": "Weißes Gebiet",
+    "capturesBlackTitle": "Schwarze Gefangene",
+    "capturesWhiteTitle": "Weiße Gefangene",
+    "deadStonesBlackTitle": "Schwarze tote Steine",
+    "deadStonesWhiteTitle": "Weiße tote Steine",
+    "komiTitle": "Komi (Weiß-Kompensation)",
+    "markedAsDead": "{{count}} Stein(e) als tot markiert",
     "autoEstimate": "Automatisch schätzen",
     "autoEstimateDescription": "Monte-Carlo-Simulation zur automatischen Erkennung toter Steine verwenden",
     "estimating": "Schätze...",
