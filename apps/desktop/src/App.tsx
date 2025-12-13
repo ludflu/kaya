@@ -33,16 +33,25 @@ import {
   useExternalLinks,
   useLayoutMode,
   LandingPage,
+  type MobileTab,
 } from '@kaya/ui';
 import { analytics } from './analytics';
 import { Updater } from './Updater';
 
-function AppContent({ versionData }: { versionData: VersionData | undefined }) {
+function AppContent({
+  versionData,
+  activeMobileTab,
+  onMobileTabChange,
+}: {
+  versionData: VersionData | undefined;
+  activeMobileTab?: MobileTab;
+  onMobileTabChange?: (tab: MobileTab) => void;
+}) {
   // Enable external links to open in default browser
   useExternalLinks();
 
   // Library panel state
-  const { showLibrary, toggleLibrary } = useLibraryPanel();
+  const { showLibrary, setShowLibrary, toggleLibrary } = useLibraryPanel();
 
   // Ref for game tree graph to control centering
   const gameTreeRef = useRef<GameTreeGraphRef>(null);
@@ -103,7 +112,7 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
   // Layout mode for responsive landing page
   const layoutMode = useLayoutMode();
   const isMobileOrTablet = layoutMode === 'mobile' || layoutMode === 'tablet';
-  
+
   // Initialize hasStarted based on layout - mobile/tablet starts with landing page
   const [hasStarted, setHasStarted] = useState(() => {
     // On initial load, desktop layout skips landing page
@@ -112,6 +121,9 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
     const isSmallScreen = window.matchMedia('(max-width: 1024px)').matches;
     return !isSmallScreen;
   });
+
+  // Track if library should be opened after transition from landing page
+  const [pendingOpenLibrary, setPendingOpenLibrary] = useState(false);
 
   // Determine if there is a saved game state
   const hasSavedGame = useMemo(() => {
@@ -132,23 +144,40 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
     }
   }, [isMobileOrTablet]);
 
+  // Open library after transition from landing page
+  useEffect(() => {
+    if (hasStarted && pendingOpenLibrary) {
+      setPendingOpenLibrary(false);
+      // On mobile/tablet, switch to library tab; on desktop, show library panel
+      if (isMobileOrTablet && onMobileTabChange) {
+        onMobileTabChange('library');
+      } else {
+        setShowLibrary(true);
+      }
+    }
+  }, [hasStarted, pendingOpenLibrary, setShowLibrary, isMobileOrTablet, onMobileTabChange]);
+
   const handleNewGame = useCallback(() => {
     createNewGame();
     setHasStarted(true);
-  }, [createNewGame]);
+    // On mobile/tablet, switch to board tab
+    if (isMobileOrTablet && onMobileTabChange) {
+      onMobileTabChange('board');
+    }
+  }, [createNewGame, isMobileOrTablet, onMobileTabChange]);
 
   const handleContinue = useCallback(() => {
     setHasStarted(true);
-  }, []);
+    // On mobile/tablet, switch to board tab
+    if (isMobileOrTablet && onMobileTabChange) {
+      onMobileTabChange('board');
+    }
+  }, [isMobileOrTablet, onMobileTabChange]);
 
   const handleOpenLibrary = useCallback(() => {
+    setPendingOpenLibrary(true);
     setHasStarted(true);
-    setTimeout(() => {
-      if (!showLibrary) {
-        toggleLibrary();
-      }
-    }, 100);
-  }, [showLibrary, toggleLibrary]);
+  }, []);
 
   const handleGoHome = useCallback(() => {
     setHasStarted(false);
@@ -301,6 +330,8 @@ function AppContent({ versionData }: { versionData: VersionData | undefined }) {
             analysisGraphContent={<AnalysisGraphPanel />}
             showSidebar={showSidebar}
             onToggleSidebar={() => setShowSidebar(prev => !prev)}
+            activeMobileTab={activeMobileTab}
+            onMobileTabChange={onMobileTabChange}
             boardContent={<GameBoard onScoreData={setScoreData} />}
             gameTreeContent={
               scoringMode && scoreData ? (
@@ -419,12 +450,15 @@ function AppWithToast({ versionData }: { versionData: VersionData | undefined })
 
 function LibraryProviderWrapper({ versionData }: { versionData: VersionData | undefined }) {
   const { loadSGFAsync, exportSGF, setFileName, isDirty, setIsDirty } = useGameTree();
+  const [activeMobileTab, setActiveMobileTab] = useState<MobileTab>('board');
 
   // Callback when a file is opened from the library
   const handleFileOpen = useCallback(
     (content: string, name: string) => {
       loadSGFAsync(content);
       setFileName(name);
+      // Switch to board view on mobile when a file is loaded
+      setActiveMobileTab('board');
     },
     [loadSGFAsync, setFileName]
   );
@@ -450,7 +484,11 @@ function LibraryProviderWrapper({ versionData }: { versionData: VersionData | un
       onSaveComplete={handleSaveComplete}
     >
       <TauriDragProvider>
-        <AppContent versionData={versionData} />
+        <AppContent
+          versionData={versionData}
+          activeMobileTab={activeMobileTab}
+          onMobileTabChange={setActiveMobileTab}
+        />
       </TauriDragProvider>
     </LibraryProvider>
   );

@@ -76,7 +76,7 @@ We welcome contributions! Whether it's bug reports, feature requests, or code co
 
 ### For Developers
 
-````bash
+```bash
 git clone https://github.com/kaya-go/kaya.git
 cd kaya
 
@@ -87,7 +87,7 @@ bun run dev:web        # Web app at http://localhost:3000
 # Build
 bun run build          # Desktop app
 bun run build:web      # Web app
-````
+```
 
 📚 **Developer Documentation**: See [DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) for detailed setup and architecture.
 

@@ -157,7 +157,7 @@ function AppContent({
   onMobileTabChange?: (tab: MobileTab) => void;
 }) {
   // Library panel state
-  const { showLibrary, toggleLibrary } = useLibraryPanel();
+  const { showLibrary, setShowLibrary, toggleLibrary } = useLibraryPanel();
 
   // Ref for game tree graph to control centering
   const gameTreeRef = useRef<GameTreeGraphRef>(null);
@@ -271,6 +271,9 @@ function AppContent({
   const isMobile = layoutMode === 'mobile';
   const [hasStarted, setHasStarted] = useState(false);
 
+  // Track if library should be opened after transition from landing page
+  const [pendingOpenLibrary, setPendingOpenLibrary] = useState(false);
+
   // Game state check for Landing Page
   const { gameTree, rootId, createNewGame, filename } = useGameTree();
 
@@ -296,25 +299,40 @@ function AppContent({
     }
   }, [isMobile]);
 
+  // Open library after transition from landing page
+  useEffect(() => {
+    if (hasStarted && pendingOpenLibrary) {
+      setPendingOpenLibrary(false);
+      // On mobile, switch to library tab; on desktop, show library panel
+      if (isMobile && onMobileTabChange) {
+        onMobileTabChange('library');
+      } else {
+        setShowLibrary(true);
+      }
+    }
+  }, [hasStarted, pendingOpenLibrary, setShowLibrary, isMobile, onMobileTabChange]);
+
   const handleNewGame = useCallback(() => {
     createNewGame(); // Actually start a new game
     setHasStarted(true);
-  }, [createNewGame]);
+    // On mobile, switch to board tab
+    if (isMobile && onMobileTabChange) {
+      onMobileTabChange('board');
+    }
+  }, [createNewGame, isMobile, onMobileTabChange]);
 
   const handleContinue = useCallback(() => {
     setHasStarted(true);
-  }, []);
+    // On mobile, switch to board tab
+    if (isMobile && onMobileTabChange) {
+      onMobileTabChange('board');
+    }
+  }, [isMobile, onMobileTabChange]);
 
   const handleOpenLibrary = useCallback(() => {
+    setPendingOpenLibrary(true);
     setHasStarted(true);
-    // Give a small delay to allow layout to mount before opening library
-    setTimeout(() => {
-      // If library is not already open, toggle it
-      if (!showLibrary) {
-        toggleLibrary();
-      }
-    }, 100);
-  }, [showLibrary, toggleLibrary]);
+  }, []);
 
   const handleGoHome = useCallback(() => {
     if (isMobile) {
