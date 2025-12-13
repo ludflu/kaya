@@ -29,11 +29,12 @@
 - 📚 **Game Library** - Organize games in folders with local storage
 - 🎮 **Input Options** - Keyboard shortcuts, gamepad support, mouse wheel navigation
 - 🎨 **Themes** - Dark and light modes
+- 🌍 **Multi-Language** - Available in 8 languages (EN, ZH, KO, JA, FR, DE, ES, IT)
 
 ### Platform Support
 
 - 🖥️ **Desktop App** - Native performance on Windows, macOS, and Linux
-- 🌐 **Web Version** - Play directly in your browser:
+- 🌐 **Web Version** - Play directly in your browser (works on mobile and tablet too)
   - [**Stable Version**](https://kaya-go.github.io/kaya) - Latest official release (Recommended)
   - [**Next Version**](https://kaya-go.github.io/kaya/next/) - Built from `main` branch (Newest features, less stable)
 
