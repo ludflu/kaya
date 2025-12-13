@@ -186,6 +186,7 @@
   },
 
   "updater": {
+    "checkForUpdates": "アップデートを確認...",
     "updateAvailable": "アップデート利用可能",
     "versionAvailable": "バージョン {{version}} が利用可能です。",
     "installing": "アップデートをインストール中...お待ちください。",

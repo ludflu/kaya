@@ -186,6 +186,7 @@
   },
 
   "updater": {
+    "checkForUpdates": "Check for Updates...",
     "updateAvailable": "Update Available",
     "versionAvailable": "Version {{version}} is available.",
     "installing": "Installing update... Please wait.",

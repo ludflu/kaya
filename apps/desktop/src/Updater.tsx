@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
@@ -10,14 +10,12 @@ import remarkBreaks from 'remark-breaks';
 import './Updater.css';
 
 export function Updater() {
-  const { t } = useTranslation();
+  const { t, ready } = useTranslation();
   const [update, setUpdate] = useState<Update | null>(null);
   const [status, setStatus] = useState<'idle' | 'available' | 'installing'>('idle');
 
-  useEffect(() => {
-    let unlisten: (() => void) | undefined;
-
-    const checkForUpdates = async (silent = false) => {
+  const checkForUpdates = useCallback(
+    async (silent = false) => {
       try {
         const updateResult = await check();
         if (updateResult?.available) {
@@ -46,22 +44,27 @@ export function Updater() {
           );
         }
       }
-    };
+    },
+    [t]
+  );
 
-    // Listen for menu event
-    listen('check-update', () => {
+  // Listen for menu event to check for updates
+  useEffect(() => {
+    const unlisten = listen('check-update', () => {
       checkForUpdates(false);
-    }).then(u => (unlisten = u));
-
-    // Auto-check on startup (silent)
-    if (!import.meta.env.DEV) {
-      checkForUpdates(true);
-    }
+    });
 
     return () => {
-      if (unlisten) unlisten();
+      unlisten.then(u => u());
     };
-  }, []);
+  }, [checkForUpdates]);
+
+  // Auto-check on startup (silent) - wait for translations to be ready
+  useEffect(() => {
+    if (!import.meta.env.DEV && ready) {
+      checkForUpdates(true);
+    }
+  }, [ready, checkForUpdates]);
 
   const handleUpdate = async () => {
     if (!update) return;
