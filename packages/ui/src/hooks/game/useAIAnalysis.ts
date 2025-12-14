@@ -19,7 +19,7 @@ import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 
 const AI_SETTINGS_STORAGE_KEY = 'kaya-ai-settings';
 
-// Predefined models
+// Predefined models - hosted on Hugging Face for reliable CORS support
 const PREDEFINED_MODELS: Array<{
   id: string;
   name: string;
@@ -32,7 +32,7 @@ const PREDEFINED_MODELS: Array<{
     name: 'Standard (Recommended)',
     description:
       'Full precision, best accuracy. Converted from kata1-b28c512nbt-adam-s11165M-d5387M',
-    url: 'https://github.com/kaya-go/katago-onnx/releases/download/1/kata1-b28c512nbt-adam-s11165M-d5387M.onnx',
+    url: 'https://huggingface.co/kaya-go/kaya/resolve/main/kata1-b28c512nbt-adam-s11165M-d5387M/kata1-b28c512nbt-adam-s11165M-d5387M.onnx',
     predefinedId: 'standard',
   },
   {
@@ -40,7 +40,7 @@ const PREDEFINED_MODELS: Array<{
     name: 'Quantized (Smaller)',
     description:
       'Smaller file, less memory, but less accurate. Converted from kata1-b28c512nbt-adam-s11165M-d5387M',
-    url: 'https://github.com/kaya-go/katago-onnx/releases/download/1/kata1-b28c512nbt-adam-s11165M-d5387M.quant.onnx',
+    url: 'https://huggingface.co/kaya-go/kaya/resolve/main/kata1-b28c512nbt-adam-s11165M-d5387M/kata1-b28c512nbt-adam-s11165M-d5387M.quant.onnx',
     predefinedId: 'quantized',
   },
 ];
@@ -305,47 +305,19 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
             lastError = e;
           }
         } else {
-          // Web environment: Try multiple CORS proxies strategies
-          const proxies: string[] = [];
-
-          // 1. Local Development Proxy (Highest priority in dev)
-          // This bypasses CORS entirely by proxying through the local dev server
-          const isLocalDev =
-            typeof window !== 'undefined' &&
-            (window.location.hostname === 'localhost' ||
-              window.location.hostname === '127.0.0.1' ||
-              window.location.hostname.startsWith('192.168.'));
-
-          if (isLocalDev) {
-            proxies.push(`/api/proxy?url=${encodeURIComponent(model.url)}`);
-          }
-
-          // 2. Production/Public strategies
-          proxies.push(
-            // GitHub specific proxies (primary strategy for releases)
-            `https://gh-proxy.com/${model.url}`,
-            `https://mirror.ghproxy.com/${model.url}`,
-            `https://gh-proxy.org/${model.url}`,
-            // Direct download (if CORS allowed or user has extension)
-            model.url,
-            // Fallback to general purpose proxies (less reliable but good backup)
-            `https://corsproxy.io/?${encodeURIComponent(model.url)}`
-          );
-
-          for (const url of proxies) {
-            try {
-              console.log(`[ModelDownload] Trying: ${url}`);
-              const res = await fetch(url);
-              if (res.ok) {
-                console.log(`[ModelDownload] Success via: ${url}`);
-                response = res;
-                break;
-              }
-              console.warn(`[ModelDownload] Failed via ${url}: ${res.status} ${res.statusText}`);
-            } catch (e) {
-              lastError = e;
-              console.warn(`[ModelDownload] Network error via ${url}:`, e);
+          // Web environment: Direct download from Hugging Face (CORS enabled)
+          try {
+            console.log(`[ModelDownload] Downloading: ${model.url}`);
+            const res = await fetch(model.url);
+            if (res.ok) {
+              console.log(`[ModelDownload] Success`);
+              response = res;
+            } else {
+              console.warn(`[ModelDownload] Failed: ${res.status} ${res.statusText}`);
             }
+          } catch (e) {
+            lastError = e;
+            console.warn(`[ModelDownload] Network error:`, e);
           }
         }
 

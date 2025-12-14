@@ -69,32 +69,6 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'require-corp',
     },
     port: 3000,
-    // Simplified proxy configuration for Rsbuild
-    proxy: {
-      '/api/proxy': {
-        target: 'https://github.com',
-        changeOrigin: true,
-        secure: false, // Accept self-signed certs
-        followRedirects: true, // CRITICAL: Follow redirects server-side, not in browser
-        router: (req: any) => {
-          const url = new URL(req.url || '', 'http://localhost:3000');
-          const targetUrl = url.searchParams.get('url');
-          if (!targetUrl) return 'https://github.com';
-          return new URL(targetUrl).origin;
-        },
-        pathRewrite: (path: string, req: any) => {
-          const url = new URL(req.url || '', 'http://localhost:3000');
-          const targetUrl = url.searchParams.get('url');
-          if (!targetUrl) return path;
-          return new URL(targetUrl).pathname + new URL(targetUrl).search;
-        },
-        onProxyRes: (proxyRes: any) => {
-          proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-          proxyRes.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS';
-          proxyRes.headers['Access-Control-Allow-Headers'] = 'Content-Type';
-        },
-      },
-    },
   },
   tools: {
     rspack: {

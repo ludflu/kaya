@@ -224,7 +224,7 @@ export const AIAnalysisConfig: React.FC = () => {
                   style={{ marginTop: '6px', display: 'flex', flexDirection: 'column', gap: '4px' }}
                 >
                   <a
-                    href="https://github.com/kaya-go/katago-onnx/releases/download/1/kata1-b28c512nbt-adam-s11165M-d5387M.onnx"
+                    href="https://huggingface.co/kaya-go/kaya/resolve/main/kata1-b28c512nbt-adam-s11165M-d5387M/kata1-b28c512nbt-adam-s11165M-d5387M.onnx"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
@@ -238,7 +238,7 @@ export const AIAnalysisConfig: React.FC = () => {
                     {t('aiConfig.standardModel')}
                   </a>
                   <a
-                    href="https://github.com/kaya-go/katago-onnx/releases/download/1/kata1-b28c512nbt-adam-s11165M-d5387M.quant.onnx"
+                    href="https://huggingface.co/kaya-go/kaya/resolve/main/kata1-b28c512nbt-adam-s11165M-d5387M/kata1-b28c512nbt-adam-s11165M-d5387M.quant.onnx"
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{
