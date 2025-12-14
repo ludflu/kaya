@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2025-12-14
+
+### <!-- 0 -->🚀 Features
+
+- Migrate model hosting from GitHub to Hugging Face ([13fa7e7](https://github.com/kaya-go/kaya/commit/13fa7e731b747462b15c9c91ae4ee467baff3077))
+
+- *(ai)* Add latest KataGo model and improve model library UX ([c1cf500](https://github.com/kaya-go/kaya/commit/c1cf5005709893f1b23c583b327baea8e237b678))
+
+- *(ai)* Add recommended and default badges to first model ([6d8d935](https://github.com/kaya-go/kaya/commit/6d8d935d38839318f7da514dc9c369ec8be6bab1))
+
+### <!-- 2 -->🚜 Refactor
+
+- *(ai)* Use neutral model descriptions with 4 variants ([ed3f591](https://github.com/kaya-go/kaya/commit/ed3f591dfecbb2b4baf778f3b1743afefa3848d7))
+
+- *(ai)* Format recommended badge rendering and improve default model selection logic ([a818916](https://github.com/kaya-go/kaya/commit/a8189161d72d3f982a1505fc45a3f0ce396d5cd7))
+
 ## [0.1.1] - 2025-12-13
 
 ### <!-- 0 -->🚀 Features
@@ -27,6 +43,10 @@ All notable changes to this project will be documented in this file.
 - Add release badge and tech stack badges with logos ([4f0f7a5](https://github.com/kaya-go/kaya/commit/4f0f7a5b8c1ce772eb158047c417d1f23c468a99))
 
 - Replace text links with styled action buttons ([e3fdb65](https://github.com/kaya-go/kaya/commit/e3fdb65db6736eccd6c63289660ce6c72b022376))
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Release v0.1.1 ([3eb79dd](https://github.com/kaya-go/kaya/commit/3eb79ddd1b082ebbd114dcfe11bcb6f69e71cb24))
 
 ## [0.1.0] - 2025-12-13
 
