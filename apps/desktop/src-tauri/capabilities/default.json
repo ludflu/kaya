@@ -10,6 +10,8 @@
     "core:webview:default",
     "core:event:default",
     "core:path:default",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text",
     "shell:allow-open",
     "dialog:default",
     "fs:default",

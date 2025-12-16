@@ -2,6 +2,43 @@
  * OGS Loader - Download and parse SGF files from Online-Go.com URLs
  */
 
+import { parse } from '@kaya/sgf';
+
+/**
+ * Extract game name from SGF content for use as filename.
+ * Uses GN (game name) property if present, otherwise returns 'untitled'.
+ */
+export function extractGameNameFromSGF(sgfContent: string): string {
+  try {
+    const roots = parse(sgfContent);
+    if (roots.length > 0) {
+      const gameName = roots[0].data.GN?.[0];
+      if (gameName?.trim()) {
+        // Sanitize the game name for use as filename
+        return gameName.trim().replace(/[/\\?%*:|"<>]/g, '-');
+      }
+    }
+  } catch {
+    // Parsing failed, return default
+  }
+  return 'untitled';
+}
+
+/**
+ * Generate a filename for SGF content based on its source.
+ * - For OGS URLs: uses ogs-{gameId}.sgf
+ * - For SGF content: extracts game name, or falls back to 'untitled.sgf'
+ */
+export function getFilenameForSGF(
+  result: { sgf: string; source: 'direct' | 'ogs'; gameId?: string }
+): string {
+  if (result.source === 'ogs' && result.gameId) {
+    return `ogs-${result.gameId}.sgf`;
+  }
+  const gameName = extractGameNameFromSGF(result.sgf);
+  return `${gameName}.sgf`;
+}
+
 /**
  * Extract game ID from an OGS URL
  * Supports formats:

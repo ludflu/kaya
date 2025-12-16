@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useGameTree } from '../../contexts/GameTreeContext';
 import { useLibrary } from '../../contexts/LibraryContext';
 import { useTauriDrag } from '../../contexts/TauriDragContext';
+import { loadContentOrOGSUrl, isOGSUrl, getFilenameForSGF } from '../../services/ogsLoader';
 import './AppDropZone.css';
 
 interface AppDropZoneProps {
@@ -47,7 +48,7 @@ const isInsideLibrary = (target: EventTarget | null): boolean => {
 
 export const AppDropZone: React.FC<AppDropZoneProps> = ({ children, onFileDrop }) => {
   const { t } = useTranslation();
-  const { loadSGF, setFileName, setCustomAIModel } = useGameTree();
+  const { loadSGF, loadSGFAsync, setFileName, setCustomAIModel } = useGameTree();
   const { clearLoadedFile, createFile, importZip, checkUnsavedChanges } = useLibrary();
   const { setTauriDragging, setOverLibrary } = useTauriDrag();
   const [isDragging, setIsDragging] = useState(false);
@@ -235,6 +236,111 @@ export const AppDropZone: React.FC<AppDropZoneProps> = ({ children, onFileDrop }
       if (unlistenDrop) unlistenDrop();
     };
   }, [handleFileLoadFromPath, handleFileImportToLibrary, updateDragState, updateLibraryState]);
+
+  // Global paste event handler for SGF content and OGS URLs
+  // This creates a new game (similar to drag and drop) when pasting SGF or OGS URLs
+  useEffect(() => {
+    const handlePaste = async (e: ClipboardEvent) => {
+      // Don't intercept if pasting into an editable element
+      const target = e.target as HTMLElement;
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target.isContentEditable ||
+        target.closest('[contenteditable="true"]')
+      ) {
+        return;
+      }
+
+      const clipboardText = e.clipboardData?.getData('text/plain');
+      if (!clipboardText?.trim()) return;
+
+      const trimmed = clipboardText.trim();
+
+      // Check if it looks like SGF content or an OGS URL
+      const looksLikeSGF = trimmed.startsWith('(');
+      const looksLikeOGSUrl = isOGSUrl(trimmed);
+
+      if (!looksLikeSGF && !looksLikeOGSUrl) {
+        // Not SGF or OGS URL - let the browser handle it normally
+        return;
+      }
+
+      // Prevent default browser paste behavior
+      e.preventDefault();
+
+      try {
+        // Check for unsaved changes first
+        const canProceed = await checkUnsavedChanges();
+        if (!canProceed) return;
+
+        // Load the content (handles both SGF and OGS URLs)
+        const result = await loadContentOrOGSUrl(trimmed);
+        await loadSGFAsync(result.sgf);
+        setFileName(getFilenameForSGF(result));
+        clearLoadedFile(); // Clear library loaded indicator
+      } catch (error) {
+        console.error('Failed to load pasted content:', error);
+      }
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [loadSGFAsync, setFileName, clearLoadedFile, checkUnsavedChanges]);
+
+  // Keyboard shortcut handler for Cmd+V/Ctrl+V (fallback for Tauri on macOS)
+  // The native paste event may not fire in Tauri, so we handle the keyboard shortcut directly
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      // Check for Ctrl+V (Windows/Linux) or Cmd+V (macOS)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        // Don't intercept if focused on an editable element
+        const target = e.target as HTMLElement;
+        if (
+          target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement ||
+          target.isContentEditable ||
+          target.closest('[contenteditable="true"]')
+        ) {
+          return;
+        }
+
+        try {
+          // Read clipboard using async API
+          const clipboardText = await navigator.clipboard.readText();
+          if (!clipboardText?.trim()) return;
+
+          const trimmed = clipboardText.trim();
+
+          // Check if it looks like SGF content or an OGS URL
+          const looksLikeSGF = trimmed.startsWith('(');
+          const looksLikeOGSUrl = isOGSUrl(trimmed);
+
+          if (!looksLikeSGF && !looksLikeOGSUrl) {
+            return;
+          }
+
+          // Prevent default browser paste behavior
+          e.preventDefault();
+
+          // Check for unsaved changes first
+          const canProceed = await checkUnsavedChanges();
+          if (!canProceed) return;
+
+          // Load the content (handles both SGF and OGS URLs)
+          const result = await loadContentOrOGSUrl(trimmed);
+          await loadSGFAsync(result.sgf);
+          setFileName(getFilenameForSGF(result));
+          clearLoadedFile();
+        } catch (error) {
+          console.error('Failed to load pasted content:', error);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [loadSGFAsync, setFileName, clearLoadedFile, checkUnsavedChanges]);
 
   const handleFileLoad = useCallback(
     async (file: File) => {

@@ -289,6 +289,7 @@ export function useGameTreeState() {
             setGameId(`game-${Date.now()}`);
             setLoadingProgress(1);
             setLoadingMessage('Done');
+            resolve(); // Resolve the promise after successful load
           } catch (error) {
             reject(error);
           } finally {

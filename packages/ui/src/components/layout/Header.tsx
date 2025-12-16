@@ -35,7 +35,7 @@ import { ConfirmationDialog } from '../dialogs/ConfirmationDialog';
 import { SaveToLibraryDialog } from '../dialogs/SaveToLibraryDialog';
 import { ToastContainer, useToast } from '../ui/Toast';
 import { saveFile, isTauriApp } from '../../services/fileSave';
-import { loadContentOrOGSUrl } from '../../services/ogsLoader';
+import { loadContentOrOGSUrl, getFilenameForSGF } from '../../services/ogsLoader';
 import { AIAnalysisConfig } from '../ai/AIAnalysisConfig';
 
 import type { VersionData } from './StatusBar';
@@ -362,7 +362,6 @@ export const Header: React.FC<HeaderProps> = ({
     try {
       const content = await navigator.clipboard.readText();
       if (!content.trim()) {
-        showToast('Clipboard is empty', 'error');
         return;
       }
 
@@ -374,26 +373,13 @@ export const Header: React.FC<HeaderProps> = ({
       // This prevents SGF files containing OGS URLs in comments/properties from being treated as URLs
       const result = await loadContentOrOGSUrl(content);
 
-      if (result.source === 'ogs' && result.gameId) {
-        showToast(`Downloading game ${result.gameId} from OGS...`, 'info');
-      }
-
       await loadSGFAsync(result.sgf);
-
-      const newFileName =
-        result.source === 'ogs' && result.gameId ? `ogs-${result.gameId}.sgf` : 'Pasted game';
-      const successMessage =
-        result.source === 'ogs' && result.gameId
-          ? `Game loaded from OGS (${result.gameId})!`
-          : 'Game loaded from clipboard!';
-
-      setFileName(newFileName);
+      setFileName(getFilenameForSGF(result));
       clearLoadedFile(); // Clear library loaded indicator
-      showToast(successMessage, 'success');
     } catch (error) {
-      showToast(`Failed to paste: ${error}`, 'error');
+      console.error('Failed to paste:', error);
     }
-  }, [loadSGFAsync, setFileName, clearLoadedFile, showToast, checkUnsavedChanges]);
+  }, [loadSGFAsync, setFileName, clearLoadedFile, checkUnsavedChanges]);
 
   const toggleFullscreen = useCallback(async () => {
     // Robust check for Tauri environment
@@ -480,11 +466,8 @@ export const Header: React.FC<HeaderProps> = ({
         handleSaveAsClick();
       }
 
-      // Ctrl+V or Cmd+V
-      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        e.preventDefault();
-        handlePasteClick();
-      }
+      // Note: Ctrl+V paste is handled by the global paste event in AppDropZone
+      // This ensures consistent behavior with the native paste event
 
       // Ctrl+Shift+M or Cmd+Shift+M - Make current branch main
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm' && e.shiftKey) {
@@ -526,7 +509,6 @@ export const Header: React.FC<HeaderProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     handleCopyClick,
-    handlePasteClick,
     handleSaveClick,
     handleSaveAsClick,
     toggleFullscreen,
