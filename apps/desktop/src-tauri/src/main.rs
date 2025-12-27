@@ -24,6 +24,7 @@ fn main() {
             commands::onnx_upload_chunk,
             commands::onnx_finish_upload,
             commands::onnx_get_cached_model,
+            commands::onnx_delete_cached_model,
             commands::onnx_initialize,
             commands::onnx_initialize_base64,
             commands::onnx_initialize_from_path,

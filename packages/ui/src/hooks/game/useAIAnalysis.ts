@@ -536,8 +536,25 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
   const deleteModel = useCallback(
     async (id: string) => {
       try {
-        // Delete data from storage
+        // Delete data from IndexedDB storage (browser local storage)
         await deleteModelData(id);
+
+        // If running in Tauri, also delete from the native cache directory
+        if (isTauriApp()) {
+          try {
+            // Get the Tauri invoke function from the global window object
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const w = window as any;
+            const invoke = w.__TAURI__?.core?.invoke || w.__TAURI_INTERNALS__?.invoke;
+
+            if (typeof invoke === 'function') {
+              await invoke('onnx_delete_cached_model', { modelId: id });
+            }
+          } catch (tauriErr) {
+            // Log but don't fail - IndexedDB deletion is the primary storage
+            console.warn('Failed to delete model from Tauri cache:', tauriErr);
+          }
+        }
 
         // Update metadata
         const storedMetadata = await loadModelLibrary();

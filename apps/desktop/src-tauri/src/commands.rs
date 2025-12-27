@@ -131,6 +131,23 @@ pub async fn onnx_get_cached_model(model_id: String, app_handle: tauri::AppHandl
     }
 }
 
+/// Delete a cached model from the app data directory
+#[tauri::command]
+pub async fn onnx_delete_cached_model(model_id: String, app_handle: tauri::AppHandle) -> Result<bool, String> {
+    let app_data = app_handle.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+    let cached_path = app_data.join("models").join(format!("{}.onnx", model_id));
+    
+    if cached_path.exists() {
+        std::fs::remove_file(&cached_path)
+            .map_err(|e| format!("Failed to delete cached model: {}", e))?;
+        Ok(true)
+    } else {
+        // Model wasn't cached, nothing to delete
+        Ok(false)
+    }
+}
+
 /// Initialize the ONNX engine with model bytes (raw Vec<u8>)
 /// Note: This may be slow for large models due to JSON serialization
 #[tauri::command]
