@@ -2,11 +2,33 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.5] - 2025-12-27
+
+### <!-- 0 -->🚀 Features
+
+- *(ai)* Hierarchical model selector with quantization options ([38ca0ed](https://github.com/kaya-go/kaya/commit/38ca0ed2a3797889c8d8f87b3273b9a4349449cd))
+
+- *(ai)* Add smart backend fallback with settings persistence ([57c4c8c](https://github.com/kaya-go/kaya/commit/57c4c8ce422a9dd2c2c4e4f80f718c233322b0f7))
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- Delete cached model from tauri filesystem when model is deleted ([829f7cc](https://github.com/kaya-go/kaya/commit/829f7ccf9c749c75f52e01cae57364ac3c5e99bb))
+
+### <!-- 2 -->🚜 Refactor
+
+- *(ai)* Simplify model definitions with url generation helper ([dc3743c](https://github.com/kaya-go/kaya/commit/dc3743c0f8b0aa331fee29a896e7b3f19bcfe0aa))
+
+- *(ai)* Improve expand/collapse handling in AIAnalysisConfig ([fd258c6](https://github.com/kaya-go/kaya/commit/fd258c6d5029d568cdb39392a557f59014769d91))
+
 ## [0.1.4] - 2025-12-27
 
 ### <!-- 0 -->🚀 Features
 
 - *(ai)* Pin katago models to specific hugging face commit hash ([47ff9bc](https://github.com/kaya-go/kaya/commit/47ff9bc144d68bd083e01f3df52c4e1f7bc6fc30))
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Release v0.1.4 ([9e7fb1d](https://github.com/kaya-go/kaya/commit/9e7fb1d2adbf4643897d5b8c33189ba8cc854fa6))
 
 ## [0.1.3] - 2025-12-16
 
