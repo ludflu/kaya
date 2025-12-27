@@ -58,15 +58,24 @@ export const AIAnalysisConfig: React.FC = () => {
     [modelLibrary]
   );
 
-  // Expand the model that contains the selected variant by default
+  // Track if user has manually interacted with expand/collapse
+  const hasUserInteracted = useRef(false);
+
+  // Expand the model that contains the selected variant on initial mount only
   useEffect(() => {
-    if (selectedModelId && expandedModelIndex === null) {
+    if (selectedModelId && expandedModelIndex === null && !hasUserInteracted.current) {
       const parsed = parseModelId(selectedModelId);
       if (parsed) {
         setExpandedModelIndex(parsed.baseModelIndex);
       }
     }
   }, [selectedModelId, expandedModelIndex]);
+
+  // Handler for toggling expand/collapse
+  const handleToggleExpand = (baseIndex: number) => {
+    hasUserInteracted.current = true;
+    setExpandedModelIndex(expandedModelIndex === baseIndex ? null : baseIndex);
+  };
 
   // Resolve portal container after mount to avoid SSR issues
   useEffect(() => {
@@ -198,7 +207,7 @@ export const AIAnalysisConfig: React.FC = () => {
                       {/* Base Model Header */}
                       <div
                         className={`model-base-header ${isExpanded ? 'expanded' : ''} ${hasSelected ? 'has-selected' : ''}`}
-                        onClick={() => setExpandedModelIndex(isExpanded ? null : baseIndex)}
+                        onClick={() => handleToggleExpand(baseIndex)}
                         role="button"
                         tabIndex={0}
                       >
