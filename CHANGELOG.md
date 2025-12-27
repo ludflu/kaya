@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.6] - 2025-12-27
+
+### <!-- 0 -->🚀 Features
+
+- *(desktop)* Improve updater UI with dev mode testing and better styling ([644f04e](https://github.com/kaya-go/kaya/commit/644f04e6031b1807c6698cce48a8bbe3eeedfbfc))
+
 ## [0.1.5] - 2025-12-27
 
 ### <!-- 0 -->🚀 Features
@@ -19,6 +25,10 @@ All notable changes to this project will be documented in this file.
 - *(ai)* Simplify model definitions with url generation helper ([dc3743c](https://github.com/kaya-go/kaya/commit/dc3743c0f8b0aa331fee29a896e7b3f19bcfe0aa))
 
 - *(ai)* Improve expand/collapse handling in AIAnalysisConfig ([fd258c6](https://github.com/kaya-go/kaya/commit/fd258c6d5029d568cdb39392a557f59014769d91))
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Release v0.1.5 ([61b078f](https://github.com/kaya-go/kaya/commit/61b078f8e401b3f82ce4fe5ec9a3e30ce00f87ee))
 
 ## [0.1.4] - 2025-12-27
 
