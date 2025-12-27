@@ -25,7 +25,62 @@ const AI_SETTINGS_STORAGE_KEY = 'kaya-ai-settings';
 const HF_MODEL_COMMIT = 'b1ca31fd8dc472c8619bab4f31d0e3cf2a63c694'; // Release 0.1.0
 const HF_REPO_BASE = `https://huggingface.co/kaya-go/kaya/resolve/${HF_MODEL_COMMIT}`;
 
-// Predefined models - hosted on Hugging Face for reliable CORS support
+// Model quantization types
+type ModelQuantization = 'fp32' | 'fp16' | 'uint8';
+
+// Helper to generate model URL from name and quantization
+function getModelUrl(modelName: string, quantization: ModelQuantization): string {
+  return `${HF_REPO_BASE}/${modelName}/${modelName}.${quantization}.onnx`;
+}
+
+// Base model definitions - just the essential info
+const MODEL_DEFINITIONS: Array<{
+  name: string;
+  displayName: string;
+  description: string;
+  recommended?: boolean;
+  isDefault?: boolean;
+}> = [
+  {
+    name: 'kata1-b28c512nbt-adam-s11165M-d5387M',
+    displayName: 'kata1-b28c512nbt-s11165M',
+    description: 'Strongest network',
+    recommended: true,
+    isDefault: true,
+  },
+  {
+    name: 'kata1-b28c512nbt-s12043015936-d5616446734',
+    displayName: 'kata1-b28c512nbt-s12043M',
+    description: 'Latest checkpoint (Dec 2025)',
+  },
+];
+
+// Quantization variants with their properties
+const QUANTIZATION_VARIANTS: Array<{
+  quantization: ModelQuantization;
+  suffix: string;
+  nameSuffix: string;
+  descriptionSuffix: string;
+  size: string;
+}> = [
+  { quantization: 'fp32', suffix: '', nameSuffix: '', descriptionSuffix: '', size: '~280 MB' },
+  {
+    quantization: 'fp16',
+    suffix: '-fp16',
+    nameSuffix: ' (fp16)',
+    descriptionSuffix: ', half precision',
+    size: '~140 MB',
+  },
+  {
+    quantization: 'uint8',
+    suffix: '-quant',
+    nameSuffix: ' (quantized)',
+    descriptionSuffix: ', reduced memory footprint',
+    size: '~75 MB',
+  },
+];
+
+// Generate predefined models from base definitions and quantization variants
 const PREDEFINED_MODELS: Array<{
   id: string;
   name: string;
@@ -35,42 +90,19 @@ const PREDEFINED_MODELS: Array<{
   predefinedId: string;
   recommended?: boolean;
   isDefault?: boolean;
-}> = [
-  {
-    id: 'katago-strongest',
-    name: 'kata1-b28c512nbt-s11165M',
-    description: 'Strongest network',
-    url: `${HF_REPO_BASE}/kata1-b28c512nbt-adam-s11165M-d5387M/kata1-b28c512nbt-adam-s11165M-d5387M.onnx`,
-    size: '~700 MB',
-    predefinedId: 'strongest',
-    recommended: true,
-    isDefault: true,
-  },
-  {
-    id: 'katago-strongest-quant',
-    name: 'kata1-b28c512nbt-s11165M (quantized)',
-    description: 'Strongest network, reduced memory footprint',
-    url: `${HF_REPO_BASE}/kata1-b28c512nbt-adam-s11165M-d5387M/kata1-b28c512nbt-adam-s11165M-d5387M.quant.onnx`,
-    size: '~180 MB',
-    predefinedId: 'strongest-quant',
-  },
-  {
-    id: 'katago-latest',
-    name: 'kata1-b28c512nbt-s12043M',
-    description: 'Latest checkpoint (Dec 2025)',
-    url: `${HF_REPO_BASE}/kata1-b28c512nbt-s12043015936-d5616446734/kata1-b28c512nbt-s12043015936-d5616446734.onnx`,
-    size: '~700 MB',
-    predefinedId: 'latest',
-  },
-  {
-    id: 'katago-latest-quant',
-    name: 'kata1-b28c512nbt-s12043M (quantized)',
-    description: 'Latest checkpoint (Dec 2025), reduced memory footprint',
-    url: `${HF_REPO_BASE}/kata1-b28c512nbt-s12043015936-d5616446734/kata1-b28c512nbt-s12043015936-d5616446734.quant.onnx`,
-    size: '~180 MB',
-    predefinedId: 'latest-quant',
-  },
-];
+}> = MODEL_DEFINITIONS.flatMap((model, modelIndex) =>
+  QUANTIZATION_VARIANTS.map((variant, variantIndex) => ({
+    id: `katago-${modelIndex === 0 ? 'strongest' : 'latest'}${variant.suffix}`,
+    name: `${model.displayName}${variant.nameSuffix}`,
+    description: `${model.description}${variant.descriptionSuffix}`,
+    url: getModelUrl(model.name, variant.quantization),
+    size: variant.size,
+    predefinedId: `${modelIndex === 0 ? 'strongest' : 'latest'}${variant.suffix}`,
+    // Only apply recommended/isDefault to the first variant (fp32)
+    ...(variantIndex === 0 && model.recommended ? { recommended: true } : {}),
+    ...(variantIndex === 0 && model.isDefault ? { isDefault: true } : {}),
+  }))
+);
 
 // Check if WebGPU is available
 function isWebGPUAvailable(): boolean {
