@@ -336,6 +336,12 @@
   color: var(--success, #22c55e);
 }
 
+.ai-analysis-summary__progress--warning {
+  color: var(--warning, #f59e0b);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 /* =========================
  * Mobile Action Toolbar
  * ========================= */

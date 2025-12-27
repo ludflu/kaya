@@ -122,6 +122,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     clearAnalysisCache,
     pendingFullGameAnalysis,
     nativeUploadProgress,
+    backendFallbackMessage,
   } = useAIAnalysis();
 
   const formatWinRate = useCallback((value?: number | null) => {
@@ -900,6 +901,14 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
                         ? `${fullGameCurrentMove}/${fullGameTotalMoves} (${fullGameProgress}%)${fullGameETA ? ` • ETA: ${fullGameETA}` : ''}`
                         : ''}
                 </span>
+                {backendFallbackMessage && (
+                  <span
+                    className="ai-analysis-summary__progress ai-analysis-summary__progress--warning"
+                    style={{ display: 'block', opacity: 1 }}
+                  >
+                    ⚠️ {backendFallbackMessage}
+                  </span>
+                )}
               </div>
             </div>
           )}

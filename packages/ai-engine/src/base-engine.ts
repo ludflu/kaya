@@ -89,6 +89,20 @@ export interface EngineCapabilities {
 }
 
 /**
+ * Runtime information about the engine
+ */
+export interface EngineRuntimeInfo {
+  /** The backend actually used (may differ from requested due to fallback) */
+  backend: string;
+  /** Input data type (float32 or float16) */
+  inputDataType: 'float32' | 'float16';
+  /** Whether a fallback occurred */
+  didFallback: boolean;
+  /** Original requested backend if fallback occurred */
+  requestedBackend?: string;
+}
+
+/**
  * Abstract base class for AI engines
  *
  * All engine implementations should extend this class and implement
@@ -148,6 +162,18 @@ export abstract class Engine {
    * Get engine capabilities and metadata
    */
   abstract getCapabilities(): EngineCapabilities;
+
+  /**
+   * Get runtime information about the engine (backend used, fallbacks, etc.)
+   * Override this in subclasses that support fallback detection
+   */
+  getRuntimeInfo(): EngineRuntimeInfo {
+    return {
+      backend: 'unknown',
+      inputDataType: 'float32',
+      didFallback: false,
+    };
+  }
 
   /**
    * Cleanup resources used by the engine

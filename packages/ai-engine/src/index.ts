@@ -42,6 +42,7 @@ export {
   type BaseEngineConfig,
   type EngineAnalysisOptions,
   type EngineCapabilities,
+  type EngineRuntimeInfo,
 } from './base-engine';
 
 // Engine implementations

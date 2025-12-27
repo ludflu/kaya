@@ -3,6 +3,7 @@
 //! This module provides AI analysis using native ONNX Runtime
 //! with GPU acceleration via CUDA, CoreML, or DirectML.
 
+use half::f16;
 use ndarray::{Array2, Array4};
 use ort::{
     execution_providers::{
@@ -140,6 +141,8 @@ pub struct OnnxEngine {
     board_size: usize,
     /// The active execution provider name
     provider_name: String,
+    /// Whether the model uses fp16 I/O tensors
+    is_fp16: bool,
 }
 
 /// Global engine instance (lazy loaded)
@@ -195,10 +198,19 @@ impl OnnxEngine {
             .commit_from_file(model_path)
             .map_err(|e| format!("Failed to load model from {:?}: {}", model_path, e))?;
 
+        // Detect if model uses fp16 inputs by checking first input's type
+        let is_fp16 = session.inputs.first().map_or(false, |input| {
+            let type_str = format!("{:?}", input.input_type);
+            eprintln!("[OnnxEngine] Input type: {}", type_str);
+            type_str.contains("Float16") || type_str.contains("float16") || type_str.contains("f16")
+        });
+        eprintln!("[OnnxEngine] Detected fp16 model: {}", is_fp16);
+
         Ok(Self {
             session,
             board_size: 19,
             provider_name,
+            is_fp16,
         })
     }
 
@@ -251,10 +263,19 @@ impl OnnxEngine {
             .commit_from_memory(model_bytes)
             .map_err(|e| format!("Failed to load model from bytes: {}", e))?;
 
+        // Detect if model uses fp16 inputs by checking first input's type
+        let is_fp16 = session.inputs.first().map_or(false, |input| {
+            let type_str = format!("{:?}", input.input_type);
+            eprintln!("[OnnxEngine from_bytes] Input type: {}", type_str);
+            type_str.contains("Float16") || type_str.contains("float16") || type_str.contains("f16")
+        });
+        eprintln!("[OnnxEngine from_bytes] Detected fp16 model: {}", is_fp16);
+
         Ok(Self {
             session,
             board_size: 19,
             provider_name,
+            is_fp16,
         })
     }
     
@@ -503,6 +524,19 @@ impl OnnxEngine {
         global_input: &Array2<f32>,
         _batch_size: usize,
     ) -> Result<OnnxOutputs, String> {
+        if self.is_fp16 {
+            self.run_inference_fp16(bin_input, global_input)
+        } else {
+            self.run_inference_fp32(bin_input, global_input)
+        }
+    }
+
+    /// Run ONNX inference with fp32 tensors
+    fn run_inference_fp32(
+        &mut self,
+        bin_input: &Array4<f32>,
+        global_input: &Array2<f32>,
+    ) -> Result<OnnxOutputs, String> {
         // Clone arrays to get owned data for tensor creation
         let bin_owned = bin_input.clone();
         let global_owned = global_input.clone();
@@ -549,6 +583,64 @@ impl OnnxEngine {
             policy: policy_data.to_vec(),
             value: value_data.to_vec(),
             miscvalue: miscvalue_data.to_vec(),
+            ownership,
+            policy_dims,
+        })
+    }
+
+    /// Run ONNX inference with fp16 tensors (converts f32 inputs to f16, runs inference, converts f16 outputs back to f32)
+    fn run_inference_fp16(
+        &mut self,
+        bin_input: &Array4<f32>,
+        global_input: &Array2<f32>,
+    ) -> Result<OnnxOutputs, String> {
+        // Convert f32 inputs to f16
+        let bin_fp16 = bin_input.mapv(|v| f16::from_f32(v));
+        let global_fp16 = global_input.mapv(|v| f16::from_f32(v));
+
+        // Create input tensors from f16 arrays
+        let bin_tensor = Tensor::from_array(bin_fp16)
+            .map_err(|e| format!("Failed to create bin_input f16 tensor: {}", e))?;
+
+        let global_tensor = Tensor::from_array(global_fp16)
+            .map_err(|e| format!("Failed to create global_input f16 tensor: {}", e))?;
+
+        // Run inference
+        let outputs = self
+            .session
+            .run(ort::inputs![bin_tensor, global_tensor])
+            .map_err(|e| format!("Inference failed: {}", e))?;
+
+        // Extract outputs as f16 and convert to f32
+        let (policy_shape, policy_data) = outputs["policy"]
+            .try_extract_tensor::<f16>()
+            .map_err(|e| format!("Failed to extract policy: {}", e))?;
+
+        let (_value_shape, value_data) = outputs["value"]
+            .try_extract_tensor::<f16>()
+            .map_err(|e| format!("Failed to extract value: {}", e))?;
+
+        let (_misc_shape, miscvalue_data) = outputs["miscvalue"]
+            .try_extract_tensor::<f16>()
+            .map_err(|e| format!("Failed to extract miscvalue: {}", e))?;
+
+        let ownership = if outputs.contains_key("ownership") {
+            let (_own_shape, own_data) = outputs["ownership"]
+                .try_extract_tensor::<f16>()
+                .map_err(|e| format!("Failed to extract ownership: {}", e))?;
+            Some(own_data.iter().map(|v| v.to_f32()).collect())
+        } else {
+            None
+        };
+
+        // Convert Shape to Vec<usize>
+        let policy_dims: Vec<usize> = policy_shape.iter().map(|&d| d as usize).collect();
+
+        // Convert f16 outputs to f32
+        Ok(OnnxOutputs {
+            policy: policy_data.iter().map(|v| v.to_f32()).collect(),
+            value: value_data.iter().map(|v| v.to_f32()).collect(),
+            miscvalue: miscvalue_data.iter().map(|v| v.to_f32()).collect(),
             ownership,
             policy_dims,
         })

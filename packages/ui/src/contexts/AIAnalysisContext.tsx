@@ -74,6 +74,9 @@ export interface AIAnalysisContextValue {
   analysisCacheSize: number;
   clearAnalysisCache: () => void;
   nativeUploadProgress: { stage: string; progress: number; message: string } | null;
+
+  // Fallback notification
+  backendFallbackMessage: string | null;
 }
 
 const AIAnalysisContext = createContext<AIAnalysisContextValue | null>(null);
@@ -98,6 +101,7 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     gameTree,
     currentNodeId,
     aiSettings,
+    setAISettings,
     setAIConfigOpen,
     gameInfo,
     analysisCache,
@@ -117,6 +121,7 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [isInitializing, setIsInitializing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [backendFallbackMessage, setBackendFallbackMessage] = useState<string | null>(null);
   const [isFullGameAnalyzing, setIsFullGameAnalyzing] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [fullGameProgress, setFullGameProgress] = useState<number>(0);
@@ -384,6 +389,25 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           globalEngineInstance = newEngine;
           globalEngineConfig = currentConfig;
 
+          // Check if engine fell back to a different backend
+          const runtimeInfo = newEngine.getRuntimeInfo();
+          if (runtimeInfo.didFallback && runtimeInfo.requestedBackend) {
+            const actualBackend = runtimeInfo.backend;
+            const requestedBackend = runtimeInfo.requestedBackend;
+
+            console.log(`[AI] Backend fallback: ${requestedBackend} -> ${actualBackend}`);
+
+            // Update settings to the actually working backend
+            if (mounted) {
+              setAISettings({ backend: actualBackend as any });
+              setBackendFallbackMessage(
+                `Backend switched from ${requestedBackend.toUpperCase()} to ${actualBackend.toUpperCase()} for compatibility.`
+              );
+              // Clear message after 5 seconds
+              setTimeout(() => setBackendFallbackMessage(null), 5000);
+            }
+          }
+
           if (mounted) {
             setEngine(newEngine);
           }
@@ -417,6 +441,7 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     isModelLoaded,
     setAIConfigOpen,
     setAnalysisMode,
+    setAISettings,
   ]);
 
   // Run analysis when mode is enabled and engine is ready
@@ -1059,6 +1084,7 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     clearAnalysisCache,
     pendingFullGameAnalysis,
     nativeUploadProgress,
+    backendFallbackMessage,
   };
 
   return <AIAnalysisContext.Provider value={value}>{children}</AIAnalysisContext.Provider>;

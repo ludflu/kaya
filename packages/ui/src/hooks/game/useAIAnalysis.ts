@@ -22,7 +22,7 @@ const AI_SETTINGS_STORAGE_KEY = 'kaya-ai-settings';
 // Hugging Face model repository commit hash for version pinning
 // Use a specific commit to ensure reproducible model downloads
 // Update this when releasing new model versions
-const HF_MODEL_REVISION = '0.2.1'; // Use tag name for readability
+const HF_MODEL_REVISION = '0.2.2'; // Use tag name for readability
 const HF_REPO_BASE = `https://huggingface.co/kaya-go/kaya/resolve/${HF_MODEL_REVISION}`;
 
 // Model quantization types - exported for UI components

@@ -1,4 +1,4 @@
-import { OnnxEngine, type OnnxEngineConfig } from '@kaya/ai-engine';
+import { OnnxEngine, type OnnxEngineConfig, type EngineRuntimeInfo } from '@kaya/ai-engine';
 import type { SignMap } from '@kaya/goboard';
 
 // Define message types
@@ -11,7 +11,8 @@ type WorkerMessage =
       inputs: { signMap: SignMap; options?: any }[];
     }
   | { type: 'dispose' }
-  | { type: 'clearCache' };
+  | { type: 'clearCache' }
+  | { type: 'getRuntimeInfo' };
 
 let engine: OnnxEngine | null = null;
 let isProcessing = false;
@@ -32,7 +33,9 @@ const processQueue = async () => {
         }
         engine = new OnnxEngine(msg.config);
         await engine.initialize();
-        self.postMessage({ type: 'init_success' });
+        // Send runtime info along with success
+        const runtimeInfo = engine.getRuntimeInfo();
+        self.postMessage({ type: 'init_success', runtimeInfo });
         break;
 
       case 'analyze':
@@ -60,6 +63,14 @@ const processQueue = async () => {
           engine.clearCache();
         }
         self.postMessage({ type: 'clearCache_success' });
+        break;
+
+      case 'getRuntimeInfo':
+        if (engine) {
+          self.postMessage({ type: 'runtimeInfo', runtimeInfo: engine.getRuntimeInfo() });
+        } else {
+          self.postMessage({ type: 'runtimeInfo', runtimeInfo: null });
+        }
         break;
     }
   } catch (error) {

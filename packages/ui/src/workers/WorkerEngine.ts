@@ -3,6 +3,7 @@ import {
   type AnalysisResult,
   type EngineAnalysisOptions,
   type EngineCapabilities,
+  type EngineRuntimeInfo,
   type OnnxEngineConfig,
 } from '@kaya/ai-engine';
 import type { SignMap } from '@kaya/goboard';
@@ -28,6 +29,7 @@ export class WorkerEngine extends Engine {
   private nextRequestId: number = 0;
   private initPromise: Promise<void> | null = null;
   private debugEnabled = false;
+  private runtimeInfo: EngineRuntimeInfo | null = null;
 
   constructor(worker: Worker, config: OnnxEngineConfig & { debug?: boolean }) {
     super(config);
@@ -95,7 +97,11 @@ export class WorkerEngine extends Engine {
         if (e.data.type === 'init_success') {
           this.worker.removeEventListener('message', handler);
           this.initialized = true;
-          this.debugLog('init-success');
+          // Store runtime info from worker
+          if (e.data.runtimeInfo) {
+            this.runtimeInfo = e.data.runtimeInfo;
+          }
+          this.debugLog('init-success', { runtimeInfo: this.runtimeInfo });
           resolve();
         } else if (e.data.type === 'error' && !e.data.id) {
           this.worker.removeEventListener('message', handler);
@@ -120,6 +126,19 @@ export class WorkerEngine extends Engine {
       providesWinRate: false,
       providesScoreLead: true,
     };
+  }
+
+  /**
+   * Get runtime information about the engine, including fallback status
+   */
+  getRuntimeInfo(): EngineRuntimeInfo {
+    return (
+      this.runtimeInfo ?? {
+        backend: 'wasm',
+        inputDataType: 'float32',
+        didFallback: false,
+      }
+    );
   }
 
   protected async analyzePosition(
