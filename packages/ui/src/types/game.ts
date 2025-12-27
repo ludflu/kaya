@@ -45,6 +45,9 @@ export interface AIModel {
 /** Predefined model identifiers */
 export type PredefinedModelId = string;
 
+/** Model quantization types */
+export type ModelQuantization = 'fp32' | 'fp16' | 'uint8';
+
 /** An entry in the model library (either predefined or user-uploaded) */
 export interface AIModelEntry {
   /** Unique identifier for the model */
@@ -73,6 +76,10 @@ export interface AIModelEntry {
   recommended?: boolean;
   /** Whether this is the default model */
   isDefault?: boolean;
+  /** Index of the base model (for predefined models) */
+  baseModelIndex?: number;
+  /** Quantization type (for predefined models) */
+  quantization?: ModelQuantization;
 }
 
 export interface GameTreeContextValue {

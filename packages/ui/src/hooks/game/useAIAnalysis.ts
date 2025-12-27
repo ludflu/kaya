@@ -22,25 +22,45 @@ const AI_SETTINGS_STORAGE_KEY = 'kaya-ai-settings';
 // Hugging Face model repository commit hash for version pinning
 // Use a specific commit to ensure reproducible model downloads
 // Update this when releasing new model versions
-const HF_MODEL_COMMIT = 'b1ca31fd8dc472c8619bab4f31d0e3cf2a63c694'; // Release 0.1.0
-const HF_REPO_BASE = `https://huggingface.co/kaya-go/kaya/resolve/${HF_MODEL_COMMIT}`;
+const HF_MODEL_REVISION = '0.2.1'; // Use tag name for readability
+const HF_REPO_BASE = `https://huggingface.co/kaya-go/kaya/resolve/${HF_MODEL_REVISION}`;
 
-// Model quantization types
-type ModelQuantization = 'fp32' | 'fp16' | 'uint8';
+// Model quantization types - exported for UI components
+export type ModelQuantization = 'fp32' | 'fp16' | 'uint8';
 
 // Helper to generate model URL from name and quantization
 function getModelUrl(modelName: string, quantization: ModelQuantization): string {
   return `${HF_REPO_BASE}/${modelName}/${modelName}.${quantization}.onnx`;
 }
 
-// Base model definitions - just the essential info
-const MODEL_DEFINITIONS: Array<{
+// Base model definition type - exported for UI components
+export interface BaseModelDefinition {
+  /** Internal name used for file paths */
   name: string;
+  /** User-friendly display name */
   displayName: string;
+  /** Short description */
   description: string;
+  /** Whether this is the recommended model */
   recommended?: boolean;
+  /** Whether this is the default model */
   isDefault?: boolean;
-}> = [
+}
+
+// Quantization variant type - exported for UI components
+export interface QuantizationVariant {
+  /** Quantization type */
+  quantization: ModelQuantization;
+  /** User-friendly label */
+  label: string;
+  /** Description of this quantization level */
+  description: string;
+  /** Approximate file size */
+  size: string;
+}
+
+// Base model definitions - exported for UI components
+export const BASE_MODELS: BaseModelDefinition[] = [
   {
     name: 'kata1-b28c512nbt-adam-s11165M-d5387M',
     displayName: 'kata1-b28c512nbt-s11165M',
@@ -55,30 +75,48 @@ const MODEL_DEFINITIONS: Array<{
   },
 ];
 
-// Quantization variants with their properties
-const QUANTIZATION_VARIANTS: Array<{
-  quantization: ModelQuantization;
-  suffix: string;
-  nameSuffix: string;
-  descriptionSuffix: string;
-  size: string;
-}> = [
-  { quantization: 'fp32', suffix: '', nameSuffix: '', descriptionSuffix: '', size: '~280 MB' },
+// Quantization variants - exported for UI components
+export const QUANTIZATION_OPTIONS: QuantizationVariant[] = [
+  {
+    quantization: 'fp32',
+    label: 'Full Precision (fp32)',
+    description: 'Highest accuracy, largest file size',
+    size: '~280 MB',
+  },
   {
     quantization: 'fp16',
-    suffix: '-fp16',
-    nameSuffix: ' (fp16)',
-    descriptionSuffix: ', half precision',
+    label: 'Half Precision (fp16)',
+    description: 'Good balance of accuracy and size',
     size: '~140 MB',
   },
   {
     quantization: 'uint8',
-    suffix: '-quant',
-    nameSuffix: ' (quantized)',
-    descriptionSuffix: ', reduced memory footprint',
+    label: 'Quantized (uint8)',
+    description: 'Smallest size, slightly reduced accuracy',
     size: '~75 MB',
   },
 ];
+
+// Helper to generate model ID from base model index and quantization
+export function getModelId(baseModelIndex: number, quantization: ModelQuantization): string {
+  const prefix = baseModelIndex === 0 ? 'strongest' : 'latest';
+  const suffix = quantization === 'fp32' ? '' : quantization === 'fp16' ? '-fp16' : '-quant';
+  return `katago-${prefix}${suffix}`;
+}
+
+// Helper to parse model ID back to base model index and quantization
+export function parseModelId(
+  modelId: string
+): { baseModelIndex: number; quantization: ModelQuantization } | null {
+  const match = modelId.match(/^katago-(strongest|latest)(-fp16|-quant)?$/);
+  if (!match) return null;
+
+  const baseModelIndex = match[1] === 'strongest' ? 0 : 1;
+  const quantization: ModelQuantization =
+    match[2] === '-fp16' ? 'fp16' : match[2] === '-quant' ? 'uint8' : 'fp32';
+
+  return { baseModelIndex, quantization };
+}
 
 // Generate predefined models from base definitions and quantization variants
 const PREDEFINED_MODELS: Array<{
@@ -88,20 +126,27 @@ const PREDEFINED_MODELS: Array<{
   url: string;
   size: string;
   predefinedId: string;
+  baseModelIndex: number;
+  quantization: ModelQuantization;
   recommended?: boolean;
   isDefault?: boolean;
-}> = MODEL_DEFINITIONS.flatMap((model, modelIndex) =>
-  QUANTIZATION_VARIANTS.map((variant, variantIndex) => ({
-    id: `katago-${modelIndex === 0 ? 'strongest' : 'latest'}${variant.suffix}`,
-    name: `${model.displayName}${variant.nameSuffix}`,
-    description: `${model.description}${variant.descriptionSuffix}`,
-    url: getModelUrl(model.name, variant.quantization),
-    size: variant.size,
-    predefinedId: `${modelIndex === 0 ? 'strongest' : 'latest'}${variant.suffix}`,
-    // Only apply recommended/isDefault to the first variant (fp32)
-    ...(variantIndex === 0 && model.recommended ? { recommended: true } : {}),
-    ...(variantIndex === 0 && model.isDefault ? { isDefault: true } : {}),
-  }))
+}> = BASE_MODELS.flatMap((model, modelIndex) =>
+  QUANTIZATION_OPTIONS.map((variant, variantIndex) => {
+    const id = getModelId(modelIndex, variant.quantization);
+    return {
+      id,
+      name: `${model.displayName}${variant.quantization === 'fp32' ? '' : ` (${variant.quantization})`}`,
+      description: `${model.description}${variant.quantization === 'fp32' ? '' : ` - ${variant.description.toLowerCase()}`}`,
+      url: getModelUrl(model.name, variant.quantization),
+      size: variant.size,
+      predefinedId: id,
+      baseModelIndex: modelIndex,
+      quantization: variant.quantization,
+      // Only apply recommended/isDefault to the first variant (fp32)
+      ...(variantIndex === 0 && model.recommended ? { recommended: true } : {}),
+      ...(variantIndex === 0 && model.isDefault ? { isDefault: true } : {}),
+    };
+  })
 );
 
 // Check if WebGPU is available
@@ -271,6 +316,8 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
             predefinedId: preset.predefinedId,
             recommended: preset.recommended,
             isDefault: preset.isDefault,
+            baseModelIndex: preset.baseModelIndex,
+            quantization: preset.quantization,
             isDownloaded,
             size: storedMeta?.size,
             date: storedMeta?.date,
@@ -465,12 +512,9 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
           )
         );
 
-        // Auto-select if this is the first downloaded model
-        const hasSelected = modelLibrary.some(m => m.id === selectedModelId && m.isDownloaded);
-        if (!hasSelected) {
-          setSelectedModelIdState(id);
-          await saveSelectedModelId(id);
-        }
+        // Auto-select the newly downloaded model
+        setSelectedModelIdState(id);
+        await saveSelectedModelId(id);
 
         // Use default toast if available (not available in hook, relying on UI feedback)
       } catch (err) {

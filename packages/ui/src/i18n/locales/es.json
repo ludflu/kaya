@@ -89,10 +89,12 @@
   "aiConfig": {
     "title": "Configuración de análisis",
     "modelLibrary": "Biblioteca de modelos",
-    "modelLibraryDescription": "Selecciona un modelo para el análisis de IA. Haz clic en descargar para comenzar.",
+    "modelLibraryDescription": "Selecciona un modelo para el análisis de IA. Expande para elegir el nivel de cuantización.",
     "active": "Activo",
     "recommended": "Recomendado",
     "default": "Predeterminado",
+    "downloaded": "descargado(s)",
+    "customModels": "Modelos personalizados",
     "downloadModel": "Descargar modelo",
     "deleteModel": "Eliminar modelo",
     "uploadCustomModel": "Subir modelo personalizado",

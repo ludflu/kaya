@@ -89,10 +89,12 @@
   "aiConfig": {
     "title": "Analysis Config",
     "modelLibrary": "Model Library",
-    "modelLibraryDescription": "Select a model for AI analysis. Click download to get started.",
+    "modelLibraryDescription": "Select a model for AI analysis. Expand to choose quantization level.",
     "active": "Active",
     "recommended": "Recommended",
     "default": "Default",
+    "downloaded": "downloaded",
+    "customModels": "Custom Models",
     "downloadModel": "Download model",
     "deleteModel": "Delete model to free space",
     "uploadCustomModel": "Upload Custom Model",

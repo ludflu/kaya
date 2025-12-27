@@ -89,10 +89,12 @@
   "aiConfig": {
     "title": "Analyse-Einstellungen",
     "modelLibrary": "Modellbibliothek",
-    "modelLibraryDescription": "Wählen Sie ein Modell für die KI-Analyse. Klicken Sie auf Herunterladen, um zu beginnen.",
+    "modelLibraryDescription": "Wählen Sie ein Modell für die KI-Analyse. Erweitern Sie, um die Quantisierungsstufe auszuwählen.",
     "active": "Aktiv",
     "recommended": "Empfohlen",
     "default": "Standard",
+    "downloaded": "heruntergeladen",
+    "customModels": "Benutzerdefinierte Modelle",
     "downloadModel": "Modell herunterladen",
     "deleteModel": "Modell löschen",
     "uploadCustomModel": "Eigenes Modell hochladen",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,15 +11,19 @@ import {
   LuDownload,
   LuCheck,
   LuLoader,
+  LuChevronDown,
+  LuChevronRight,
 } from 'react-icons/lu';
 import { useGameTree } from '../../contexts/GameTreeContext';
 import { useToast } from '../ui/Toast';
 import { isTauriApp } from '../../services/fileSave';
+import { BASE_MODELS, QUANTIZATION_OPTIONS, parseModelId } from '../../hooks/game/useAIAnalysis';
 import './AIAnalysisConfig.css';
 
 export const AIAnalysisConfig: React.FC = () => {
   const { t } = useTranslation();
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
+  const [expandedModelIndex, setExpandedModelIndex] = useState<number | null>(null);
   const {
     aiSettings,
     setAISettings,
@@ -34,6 +38,35 @@ export const AIAnalysisConfig: React.FC = () => {
   } = useGameTree();
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Group models by base model index for hierarchical display
+  const modelsByBase = useMemo(() => {
+    const grouped = new Map<number, typeof modelLibrary>();
+    for (const model of modelLibrary) {
+      if (model.baseModelIndex !== undefined) {
+        const existing = grouped.get(model.baseModelIndex) || [];
+        existing.push(model);
+        grouped.set(model.baseModelIndex, existing);
+      }
+    }
+    return grouped;
+  }, [modelLibrary]);
+
+  // Get user-uploaded models (those without baseModelIndex)
+  const userModels = useMemo(
+    () => modelLibrary.filter(m => m.baseModelIndex === undefined),
+    [modelLibrary]
+  );
+
+  // Expand the model that contains the selected variant by default
+  useEffect(() => {
+    if (selectedModelId && expandedModelIndex === null) {
+      const parsed = parseModelId(selectedModelId);
+      if (parsed) {
+        setExpandedModelIndex(parsed.baseModelIndex);
+      }
+    }
+  }, [selectedModelId, expandedModelIndex]);
 
   // Resolve portal container after mount to avoid SSR issues
   useEffect(() => {
@@ -152,76 +185,177 @@ export const AIAnalysisConfig: React.FC = () => {
               </div>
 
               <div className="model-library-list">
-                {modelLibrary.map(model => (
-                  <div
-                    key={model.id}
-                    className={`model-library-item ${model.isDownloaded ? 'downloaded' : ''} ${
-                      selectedModelId === model.id ? 'selected' : ''
-                    }`}
-                    onClick={() => model.isDownloaded && handleSelect(model.id)}
-                    role={model.isDownloaded ? 'button' : undefined}
-                    tabIndex={model.isDownloaded ? 0 : undefined}
-                  >
-                    <div className="model-library-info">
-                      <div className="model-library-name">
-                        {model.name}
-                        {model.recommended && (
-                          <span className="model-recommended-badge">
-                            {t('aiConfig.recommended')}
-                          </span>
-                        )}
-                        {model.isDefault && (
-                          <span className="model-default-badge">{t('aiConfig.default')}</span>
-                        )}
-                        {selectedModelId === model.id && (
-                          <span className="model-active-badge">
-                            <LuCheck size={12} /> {t('aiConfig.active')}
-                          </span>
-                        )}
-                      </div>
-                      <div className="model-library-meta">
-                        <span className="model-library-desc">{model.description}</span>
-                        {model.size && (
-                          <span className="model-library-size">
-                            {(model.size / 1024 / 1024).toFixed(1)} MB
-                          </span>
-                        )}
-                      </div>
-                    </div>
+                {/* Base Models with Quantization Options */}
+                {BASE_MODELS.map((baseModel, baseIndex) => {
+                  const variants = modelsByBase.get(baseIndex) || [];
+                  const isExpanded = expandedModelIndex === baseIndex;
+                  const hasDownloaded = variants.some(v => v.isDownloaded);
+                  const hasSelected = variants.some(v => v.id === selectedModelId);
+                  const downloadedCount = variants.filter(v => v.isDownloaded).length;
 
-                    <div className="model-library-actions">
-                      {model.isDownloading ? (
-                        <div className="model-download-progress">
-                          <LuLoader className="spinning" size={16} />
-                          <span>{model.downloadProgress ?? 0}%</span>
+                  return (
+                    <div key={baseIndex} className="model-base-group">
+                      {/* Base Model Header */}
+                      <div
+                        className={`model-base-header ${isExpanded ? 'expanded' : ''} ${hasSelected ? 'has-selected' : ''}`}
+                        onClick={() => setExpandedModelIndex(isExpanded ? null : baseIndex)}
+                        role="button"
+                        tabIndex={0}
+                      >
+                        <div className="model-base-expand">
+                          {isExpanded ? <LuChevronDown size={16} /> : <LuChevronRight size={16} />}
                         </div>
-                      ) : model.isDownloaded ? (
-                        <button
-                          className="model-action-btn danger"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleDelete(model.id);
-                          }}
-                          title={t('aiConfig.deleteModel')}
-                        >
-                          <LuTrash2 size={16} />
-                        </button>
-                      ) : (
-                        <button
-                          className="model-action-btn primary"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleDownload(model.id);
-                          }}
-                          disabled={isAnyDownloading}
-                          title={t('aiConfig.downloadModel')}
-                        >
-                          <LuDownload size={16} />
-                        </button>
+                        <div className="model-base-info">
+                          <div className="model-base-name">
+                            {baseModel.displayName}
+                            {baseModel.recommended && (
+                              <span className="model-recommended-badge">
+                                {t('aiConfig.recommended')}
+                              </span>
+                            )}
+                          </div>
+                          <div className="model-base-meta">
+                            <span className="model-base-desc">{baseModel.description}</span>
+                            {hasDownloaded && (
+                              <span className="model-base-downloaded">
+                                {downloadedCount}/{variants.length} {t('aiConfig.downloaded')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quantization Variants */}
+                      {isExpanded && (
+                        <div className="model-variants-list">
+                          {QUANTIZATION_OPTIONS.map(quantOption => {
+                            const variant = variants.find(
+                              v => v.quantization === quantOption.quantization
+                            );
+                            if (!variant) return null;
+
+                            return (
+                              <div
+                                key={variant.id}
+                                className={`model-variant-item ${variant.isDownloaded ? 'downloaded' : ''} ${
+                                  selectedModelId === variant.id ? 'selected' : ''
+                                }`}
+                                onClick={() => variant.isDownloaded && handleSelect(variant.id)}
+                                role={variant.isDownloaded ? 'button' : undefined}
+                                tabIndex={variant.isDownloaded ? 0 : undefined}
+                              >
+                                <div className="model-variant-info">
+                                  <div className="model-variant-name">
+                                    {quantOption.label}
+                                    {selectedModelId === variant.id && (
+                                      <span className="model-active-badge">
+                                        <LuCheck size={12} /> {t('aiConfig.active')}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="model-variant-meta">
+                                    <span className="model-variant-desc">
+                                      {quantOption.description}
+                                    </span>
+                                    <span className="model-variant-size">{quantOption.size}</span>
+                                  </div>
+                                </div>
+
+                                <div className="model-library-actions">
+                                  {variant.isDownloading ? (
+                                    <div className="model-download-progress">
+                                      <LuLoader className="spinning" size={16} />
+                                      <span>{variant.downloadProgress ?? 0}%</span>
+                                    </div>
+                                  ) : variant.isDownloaded ? (
+                                    <button
+                                      className="model-action-btn danger"
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        handleDelete(variant.id);
+                                      }}
+                                      title={t('aiConfig.deleteModel')}
+                                    >
+                                      <LuTrash2 size={16} />
+                                    </button>
+                                  ) : (
+                                    <button
+                                      className="model-action-btn primary"
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        handleDownload(variant.id);
+                                      }}
+                                      disabled={isAnyDownloading}
+                                      title={t('aiConfig.downloadModel')}
+                                    >
+                                      <LuDownload size={16} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
                     </div>
+                  );
+                })}
+
+                {/* User-uploaded Models */}
+                {userModels.length > 0 && (
+                  <div className="model-base-group user-models">
+                    <div className="model-base-header user-models-header">
+                      <div className="model-base-info">
+                        <div className="model-base-name">{t('aiConfig.customModels')}</div>
+                      </div>
+                    </div>
+                    <div className="model-variants-list">
+                      {userModels.map(model => (
+                        <div
+                          key={model.id}
+                          className={`model-variant-item ${model.isDownloaded ? 'downloaded' : ''} ${
+                            selectedModelId === model.id ? 'selected' : ''
+                          }`}
+                          onClick={() => model.isDownloaded && handleSelect(model.id)}
+                          role={model.isDownloaded ? 'button' : undefined}
+                          tabIndex={model.isDownloaded ? 0 : undefined}
+                        >
+                          <div className="model-variant-info">
+                            <div className="model-variant-name">
+                              {model.name}
+                              {selectedModelId === model.id && (
+                                <span className="model-active-badge">
+                                  <LuCheck size={12} /> {t('aiConfig.active')}
+                                </span>
+                              )}
+                            </div>
+                            <div className="model-variant-meta">
+                              <span className="model-variant-desc">{model.description}</span>
+                              {model.size && (
+                                <span className="model-variant-size">
+                                  {(model.size / 1024 / 1024).toFixed(1)} MB
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="model-library-actions">
+                            <button
+                              className="model-action-btn danger"
+                              onClick={e => {
+                                e.stopPropagation();
+                                handleDelete(model.id);
+                              }}
+                              title={t('aiConfig.deleteModel')}
+                            >
+                              <LuTrash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                )}
               </div>
 
               {/* Upload Button */}
