@@ -609,13 +609,26 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
         // Valid coordinate move
         playMove(vertex, currentPlayer);
       }
+
+      // Play sound after successful move
+      playSound('move');
     } catch (error) {
       console.error('Failed to generate AI move:', error);
       showToast(t('gameboardActions.failedToGenerateMove'), 'error');
     } finally {
       setIsGeneratingMove(false);
     }
-  }, [aiEngine, isModelLoaded, currentBoard, currentPlayer, gameInfo.komi, playMove, showToast, t]);
+  }, [
+    aiEngine,
+    isModelLoaded,
+    currentBoard,
+    currentPlayer,
+    gameInfo.komi,
+    playMove,
+    playSound,
+    showToast,
+    t,
+  ]);
 
   // Handler for AI move suggestion (separate from analysis)
   const handleSuggestMove = useCallback(async () => {
