@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.8] - 2025-12-28
+
+### <!-- 0 -->🚀 Features
+
+- *(ui)* Add unified KayaConfig modal with tabs and fuzzy stone placement toggle ([5569982](https://github.com/kaya-go/kaya/commit/55699820c269a72566337bdc9be8142533b143b4))
+
+- *(ui)* Add explanation for custom model upload feature ([97904b4](https://github.com/kaya-go/kaya/commit/97904b40c481b471bcd8892318822022dc432673))
+
+- *(ui)* Improve AI config UX with get started banner and KataGo attribution ([d794960](https://github.com/kaya-go/kaya/commit/d794960575ddd6c397af4b9f4978db7d6aaffc4f))
+
+### <!-- 1 -->🐛 Bug Fixes
+
+- *(ui)* Prevent toggle switch from inheriting tablet min-height ([ef64e0c](https://github.com/kaya-go/kaya/commit/ef64e0cbf46e7aae4aebd9bb843db79e6cdb7573))
+
+- *(linux)* Improve appimage compatibility by building on ubuntu-22.04 ([e13c7f2](https://github.com/kaya-go/kaya/commit/e13c7f257cbd4a119f370eab86a605bf688580fb))
+
+- *(release)* Update platform condition to use ubuntu-22.04 for dependencies and build ([e32d2a5](https://github.com/kaya-go/kaya/commit/e32d2a58b38cc68208023691c2c58b0f09c73bb0))
+
+- Remove unsupported bundleXdgOpen config option ([0eed66a](https://github.com/kaya-go/kaya/commit/0eed66a961c39606e20136eec5525e696fbf3184))
+
+- *(i18n)* Upgrade react-i18next to v16.5.0 and fix language switching ([c10f95f](https://github.com/kaya-go/kaya/commit/c10f95f9f8051174211bfd072e6730acd0d98ba1))
+
+### <!-- 2 -->🚜 Refactor
+
+- *(ui)* Rename settings to analysis options in AI config ([5656f0e](https://github.com/kaya-go/kaya/commit/5656f0e51a52336c35d8fdd312f3038f934377a2))
+
+### <!-- 3 -->📚 Documentation
+
+- Add github release download count badge ([2090486](https://github.com/kaya-go/kaya/commit/2090486b70384b8c6581a0557f988a86d4d69a02))
+
+- *(i18n)* Clarify that only .onnx models are supported for custom upload ([f66f13e](https://github.com/kaya-go/kaya/commit/f66f13eca1d12f0d40c82d4ca82daf9d7ed90157))
+
+- Add contributing guide with setup instructions ([b19113c](https://github.com/kaya-go/kaya/commit/b19113c33c5dfba83f878240f43bddabd48018da))
+
+- Add issue and pull request templates ([bc355b8](https://github.com/kaya-go/kaya/commit/bc355b839792ff67501e0258a5dc65644d931f1c))
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Add stale bot to close inactive issues and PRs ([a5584c1](https://github.com/kaya-go/kaya/commit/a5584c13bc4cf48278043971aad2f2231ca5f0f0))
+
 ## [0.1.7] - 2025-12-28
 
 ### <!-- 0 -->🚀 Features
@@ -21,6 +61,8 @@ All notable changes to this project will be documented in this file.
 ### <!-- 7 -->⚙️ Miscellaneous Tasks
 
 - Add CLA assistant workflow and contributor license agreement ([50dee15](https://github.com/kaya-go/kaya/commit/50dee152e2e0fe778eb55c3bc73723e637f910c3))
+
+- Release v0.1.7 ([0def89d](https://github.com/kaya-go/kaya/commit/0def89d4db7814951bbaba5cc795cd0f6acfc97e))
 
 ## [0.1.6] - 2025-12-27
 
