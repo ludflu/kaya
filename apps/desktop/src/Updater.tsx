@@ -9,6 +9,11 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import './Updater.css';
 
+// Strip HTML comments from markdown (used by git-cliff for section ordering)
+function stripHtmlComments(markdown: string): string {
+  return markdown.replace(/<!--[\s\S]*?-->/g, '').trim();
+}
+
 // Mock update data for DEV mode testing
 const DEV_MOCK_UPDATE = {
   available: true,
@@ -181,7 +186,9 @@ export function Updater() {
         </p>
         {update.body && (
           <div className="updater-release-notes">
-            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>{update.body}</ReactMarkdown>
+            <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
+              {stripHtmlComments(update.body)}
+            </ReactMarkdown>
           </div>
         )}
 
