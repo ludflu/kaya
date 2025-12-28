@@ -1,8 +1,9 @@
 /**
  * AI Analysis Context
  *
- * Provides AI analysis state and functionality using ONNX engine
- * Manages the engine lifecycle, full game analysis, and shared analysis state.
+ * Provides AI analysis state and functionality using ONNX engine.
+ * Manages full game analysis, caching, and analysis-specific UI state.
+ * Engine lifecycle is managed by AIEngineContext.
  */
 
 import React, {
@@ -14,13 +15,12 @@ import React, {
   useRef,
   useMemo,
 } from 'react';
-import type { Engine, AnalysisResult, MoveSuggestion } from '@kaya/ai-engine';
+import type { AnalysisResult, MoveSuggestion } from '@kaya/ai-engine';
 import { type SignMap } from '@kaya/goboard';
 import { useGameTree } from './GameTreeContext';
-import { isTauriApp } from '../services/fileSave';
+import { useAIEngine } from './AIEngineContext';
 import { WorkerEngine } from '../workers/WorkerEngine';
 import { getPathToNode, boardCache } from '../utils/gameCache';
-import { loadModelData } from '../services/modelStorage';
 import {
   createInitialAnalysisState,
   updateAnalysisState,
@@ -31,11 +31,6 @@ import {
   formatProbability,
   type AnalysisHistoryItem,
 } from '../utils/aiAnalysis';
-
-// Global state for singleton engine management
-let globalEngineInstance: Engine | null = null;
-let globalEnginePromise: Promise<Engine> | null = null;
-let globalEngineConfig: { modelName: string; backend: string } | null = null;
 
 // Global guard for analysis
 let globalIsAnalyzing = false;
@@ -75,11 +70,8 @@ export interface AIAnalysisContextValue {
   clearAnalysisCache: () => void;
   nativeUploadProgress: { stage: string; progress: number; message: string } | null;
 
-  // Fallback notification
+  // Fallback notification (from AIEngineContext)
   backendFallbackMessage: string | null;
-
-  // Engine
-  aiEngine: Engine | null;
 }
 
 const AIAnalysisContext = createContext<AIAnalysisContextValue | null>(null);
@@ -100,12 +92,9 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     moveNumber,
     gameId,
     customAIModel,
-    isModelLoaded,
     gameTree,
     currentNodeId,
     aiSettings,
-    setAISettings,
-    setAIConfigOpen,
     gameInfo,
     analysisCache,
     analysisCacheSize,
@@ -120,11 +109,18 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     isLoadingSGF,
   } = useGameTree();
 
-  const [engine, setEngine] = useState<Engine | null>(null);
-  const [isInitializing, setIsInitializing] = useState(false);
+  // Get engine from AIEngineContext
+  const {
+    engine,
+    isEngineReady,
+    isInitializing,
+    error: engineError,
+    nativeUploadProgress,
+    backendFallbackMessage,
+  } = useAIEngine();
+
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [backendFallbackMessage, setBackendFallbackMessage] = useState<string | null>(null);
   const [isFullGameAnalyzing, setIsFullGameAnalyzing] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [fullGameProgress, setFullGameProgress] = useState<number>(0);
@@ -133,11 +129,6 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [fullGameETA, setFullGameETA] = useState<string | null>(null);
   const [allAnalyzedMessage, setAllAnalyzedMessage] = useState<string | null>(null);
   const [pendingFullGameAnalysis, setPendingFullGameAnalysis] = useState(false);
-  const [nativeUploadProgress, setNativeUploadProgress] = useState<{
-    stage: string;
-    progress: number;
-    message: string;
-  } | null>(null);
 
   const stopAnalysisRef = useRef(false);
   const currentNodeIdRef = useRef(currentNodeId);
@@ -243,209 +234,6 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       prevKomiRef.current = currentKomi;
     }
   }, [gameInfo?.komi, analysisCache, updateAnalysisCacheSize, setAnalysisResult, isLoadingSGF]);
-
-  // Manage engine lifecycle
-  useEffect(() => {
-    let mounted = true;
-
-    const manageEngine = async () => {
-      // Case 1: Analysis enabled - Load engine if needed
-      if (analysisMode) {
-        // Wait for model to be loaded from storage
-        if (!isModelLoaded) {
-          return;
-        }
-
-        // Check if we can reuse the existing global instance
-        const currentConfig = {
-          modelName: customAIModel?.name || 'default',
-          backend: aiSettings.backend,
-        };
-
-        const configChanged =
-          !globalEngineConfig ||
-          globalEngineConfig.modelName !== currentConfig.modelName ||
-          globalEngineConfig.backend !== currentConfig.backend;
-
-        if (globalEngineInstance && !configChanged) {
-          // Reuse existing instance
-          if (mounted) {
-            setEngine(globalEngineInstance);
-          }
-          return;
-        }
-
-        // Start new initialization
-        setIsInitializing(true);
-        setError(null);
-
-        try {
-          // Dispose existing if any (and if we are forcing re-init)
-          if (globalEngineInstance) {
-            await globalEngineInstance.dispose();
-            globalEngineInstance = null;
-            globalEnginePromise = null;
-          }
-
-          if (!customAIModel) {
-            // No model is loaded - open the config dialog to prompt download
-            setAIConfigOpen(true);
-            setIsInitializing(false);
-            setAnalysisMode(false);
-            return;
-          }
-
-          if (!globalEnginePromise) {
-            globalEnginePromise = (async () => {
-              let buffer: ArrayBuffer;
-              const modelData = customAIModel.data;
-
-              if (modelData instanceof File) {
-                buffer = await modelData.arrayBuffer();
-              } else if (modelData instanceof ArrayBuffer) {
-                buffer = modelData;
-              } else if (typeof modelData === 'string') {
-                const storedData = await loadModelData(modelData);
-                if (!storedData) {
-                  throw new Error(`Model not found in storage: ${modelData}`);
-                }
-                buffer = storedData;
-              } else {
-                throw new Error('Invalid model data type');
-              }
-
-              const isTauri = isTauriApp();
-
-              const useNativeEngine =
-                isTauri && (aiSettings.backend === 'native' || aiSettings.backend === 'native-cpu');
-
-              if (useNativeEngine) {
-                try {
-                  // @ts-ignore - dynamic import might not have types in all contexts
-                  const { TauriEngine } = await import('@kaya/ai-engine/tauri-engine');
-
-                  const modelId = customAIModel?.name?.replace(/[^a-zA-Z0-9-_]/g, '_') ?? 'default';
-                  const executionProvider = aiSettings.backend === 'native-cpu' ? 'cpu' : 'auto';
-
-                  const newEngine = new TauriEngine({
-                    maxMoves: 10,
-                    enableCache: true,
-                    modelBuffer: buffer,
-                    modelId,
-                    executionProvider,
-                    onProgress: (progress: any) => {
-                      setNativeUploadProgress({
-                        stage: progress.stage,
-                        progress: progress.progress,
-                        message: progress.message,
-                      });
-                    },
-                  });
-
-                  await newEngine.initialize();
-                  setNativeUploadProgress(null);
-                  return newEngine;
-                } catch (tauriError) {
-                  console.error('[AI] TauriEngine failed, falling back to web engine:', tauriError);
-                }
-              }
-
-              // Use web-based ONNX Runtime
-              const worker = new Worker(new URL('../workers/ai.worker.js', import.meta.url), {
-                type: 'module',
-              });
-
-              // @ts-ignore
-              const envPrefix = (import.meta as any).env?.VITE_ASSET_PREFIX;
-
-              let wasmPath: string;
-              if (isTauri) {
-                wasmPath = '/wasm/';
-              } else if (envPrefix && envPrefix !== '/') {
-                wasmPath = envPrefix.endsWith('/') ? `${envPrefix}wasm/` : `${envPrefix}/wasm/`;
-              } else {
-                wasmPath = new URL('wasm/', document.baseURI || window.location.href).href;
-              }
-
-              let executionProviders: string[];
-              if (aiSettings.backend === 'webgpu') {
-                executionProviders = ['webgpu', 'wasm'];
-              } else {
-                executionProviders = ['wasm'];
-              }
-
-              const newEngine = new WorkerEngine(worker, {
-                maxMoves: 10,
-                enableCache: true,
-                modelBuffer: buffer,
-                wasmPath,
-                executionProviders,
-                numThreads: Math.min(8, navigator.hardwareConcurrency || 4),
-              });
-
-              await newEngine.initialize();
-              return newEngine;
-            })();
-          }
-
-          const newEngine = await globalEnginePromise;
-          globalEngineInstance = newEngine;
-          globalEngineConfig = currentConfig;
-
-          // Check if engine fell back to a different backend
-          const runtimeInfo = newEngine.getRuntimeInfo();
-          if (runtimeInfo.didFallback && runtimeInfo.requestedBackend) {
-            const actualBackend = runtimeInfo.backend;
-            const requestedBackend = runtimeInfo.requestedBackend;
-
-            console.log(`[AI] Backend fallback: ${requestedBackend} -> ${actualBackend}`);
-
-            // Update settings to the actually working backend
-            if (mounted) {
-              setAISettings({ backend: actualBackend as any });
-              setBackendFallbackMessage(
-                `Backend switched from ${requestedBackend.toUpperCase()} to ${actualBackend.toUpperCase()} for compatibility.`
-              );
-              // Clear message after 5 seconds
-              setTimeout(() => setBackendFallbackMessage(null), 5000);
-            }
-          }
-
-          if (mounted) {
-            setEngine(newEngine);
-          }
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          if (mounted) {
-            setError(`Failed to initialize AI engine: ${message}`);
-          }
-          console.error('AI Engine initialization failed:', err);
-          globalEnginePromise = null;
-          globalEngineConfig = null;
-        } finally {
-          if (mounted) setIsInitializing(false);
-        }
-      } else {
-        if (mounted) {
-          setEngine(null);
-        }
-      }
-    };
-
-    manageEngine();
-
-    return () => {
-      mounted = false;
-    };
-  }, [
-    analysisMode,
-    customAIModel,
-    aiSettings.backend,
-    isModelLoaded,
-    setAIConfigOpen,
-    setAnalysisMode,
-    setAISettings,
-  ]);
 
   // Run analysis when mode is enabled and engine is ready
   const runAnalysis = useCallback(async () => {
@@ -1072,7 +860,7 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     toggleTopMoves,
     isInitializing,
     isAnalyzing,
-    error,
+    error: error || engineError,
     analysisResult,
     analyzeFullGame,
     stopFullGameAnalysis,
@@ -1088,7 +876,6 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     pendingFullGameAnalysis,
     nativeUploadProgress,
     backendFallbackMessage,
-    aiEngine: engine,
   };
 
   return <AIAnalysisContext.Provider value={value}>{children}</AIAnalysisContext.Provider>;

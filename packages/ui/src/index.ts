@@ -11,6 +11,11 @@ export type {
   NewGameConfig,
 } from './contexts/GameTreeContext';
 
+// AI Engine Context (engine lifecycle management)
+export { AIEngineProvider, useAIEngine } from './contexts/AIEngineContext';
+export type { AIEngineContextValue } from './contexts/AIEngineContext';
+
+// AI Analysis Context (analysis logic, caching, UI state)
 export {
   AIAnalysisProvider,
   useAIAnalysis as useAIAnalysisContext,

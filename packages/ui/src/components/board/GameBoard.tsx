@@ -48,7 +48,7 @@ import { ScoreEstimator, type ScoreData } from './ScoreEstimator';
 import { calculateTerritory, countDeadStones } from '../../services/scoring';
 import { EditToolbar } from '../editors/EditToolbar';
 import { useAIAnalysis } from '../ai/AIAnalysisOverlay';
-import { useAIAnalysis as useAIEngine } from '../../contexts/AIAnalysisContext';
+import { useAIEngine } from '../../contexts/AIEngineContext';
 import { useGameTree } from '../../contexts/GameTreeContext';
 import { useToast } from '../ui/Toast';
 import { parseGTPCoordinate } from '../../utils/gtpUtils';
@@ -101,9 +101,14 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
   const [isGeneratingMove, setIsGeneratingMove] = useState(false);
   const [pendingSuggestMove, setPendingSuggestMove] = useState(false);
 
-  // AI Move generation
-  const { isModelLoaded, analysisMode: aiAnalysisMode, setAnalysisMode } = useGameTree();
-  const { aiEngine } = useAIEngine();
+  // AI Move generation - get engine directly from AIEngineContext
+  const { isModelLoaded } = useGameTree();
+  const {
+    engine: aiEngine,
+    isEngineReady,
+    isInitializing: isEngineInitializing,
+    initializeEngine,
+  } = useAIEngine();
   const { showToast } = useToast();
 
   const nextMove = useMemo(() => {
@@ -642,30 +647,27 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     }
 
     // If engine is ready, generate move immediately
-    if (aiEngine) {
+    if (isEngineReady && aiEngine) {
       await executeGenerateMove();
       return;
     }
 
-    // Engine not ready - queue the request and initialize
+    // Engine not ready - queue the request and trigger initialization
     setPendingSuggestMove(true);
     setIsGeneratingMove(true);
 
-    // Enable analysis mode to initialize the engine
-    // The engine is shared but move generation doesn't affect analysis cache/UI
-    if (!aiAnalysisMode) {
-      setAnalysisMode(true);
-    }
+    // Initialize the engine directly (no longer toggles analysisMode)
+    initializeEngine();
 
     showToast(t('gameboardActions.initializingAiEngine'), 'info');
-  }, [isModelLoaded, aiAnalysisMode, setAnalysisMode, aiEngine, executeGenerateMove, showToast, t]);
+  }, [isModelLoaded, isEngineReady, aiEngine, executeGenerateMove, showToast, t, initializeEngine]);
 
   // Auto-trigger move generation when engine becomes available and a request is pending
   useEffect(() => {
-    if (pendingSuggestMove && aiEngine && isModelLoaded) {
+    if (pendingSuggestMove && isEngineReady && aiEngine && isModelLoaded) {
       executeGenerateMove();
     }
-  }, [pendingSuggestMove, aiEngine, isModelLoaded, executeGenerateMove]);
+  }, [pendingSuggestMove, isEngineReady, aiEngine, isModelLoaded, executeGenerateMove]);
 
   // Calculate score when in scoring mode
   const scoreData: ScoreData | null = useMemo(() => {
