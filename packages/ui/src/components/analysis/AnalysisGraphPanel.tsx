@@ -1,9 +1,22 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
-import { LuMap, LuZap, LuSquare, LuTrash2, LuInfo, LuX, LuLayers, LuLoader } from 'react-icons/lu';
+import {
+  LuMap,
+  LuZap,
+  LuSquare,
+  LuTrash2,
+  LuInfo,
+  LuX,
+  LuLayers,
+  LuLoader,
+  LuClock,
+  LuSettings,
+} from 'react-icons/lu';
 import { useGameTree } from '../../contexts/GameTreeContext';
+import { useSenteGote } from '../../contexts/SenteGoteContext';
 import { AnalysisLegendModal } from './AnalysisLegendModal';
+import { SenteGoteSettingsModal } from './SenteGoteSettingsModal';
 import {
   createInitialAnalysisState,
   updateAnalysisState,
@@ -52,10 +65,25 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     isAnalyzing,
   } = useAIAnalysis();
 
+  const {
+    analyzeFullGameSenteGote,
+    stopSenteGoteAnalysis,
+    isSenteGoteAnalyzing,
+    senteGoteProgress,
+    senteGoteCurrent,
+    senteGoteTotal,
+    senteGoteETA,
+    clearSenteGoteCache,
+    senteGoteSettings,
+    updateSenteGoteSettings,
+    senteGoteCache,
+  } = useSenteGote();
+
   // Toggle state for showing/hiding each metric
   const [showWinRate, setShowWinRate] = useState(true);
   const [showScoreLead, setShowScoreLead] = useState(true);
   const [showMoveStrengthInfo, setShowMoveStrengthInfo] = useState(false);
+  const [showSenteGoteSettings, setShowSenteGoteSettings] = useState(false);
 
   const handleToggleWinRate = useCallback(() => {
     setShowWinRate(prev => !prev);
@@ -224,6 +252,43 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
           <LuInfo size={16} />
         </button>
         <div className="analysis-toolbar-spacer" />
+
+        {/* Sente/Gote Analysis Controls */}
+        <button
+          className={`analysis-action-button ${isSenteGoteAnalyzing ? 'active analyzing' : ''}`}
+          title={
+            isSenteGoteAnalyzing ? 'Stop Sente/Gote Analysis' : 'Analyze Sente/Gote for Full Game'
+          }
+          onClick={isSenteGoteAnalyzing ? stopSenteGoteAnalysis : analyzeFullGameSenteGote}
+          disabled={isInitializing || !senteGoteSettings.enabled}
+          aria-label="Sente/Gote Analysis"
+        >
+          {isSenteGoteAnalyzing ? <LuSquare size={16} /> : <LuClock size={16} />}
+        </button>
+        <button
+          className="analysis-action-button"
+          title="Sente/Gote Settings"
+          onClick={() => setShowSenteGoteSettings(true)}
+          disabled={isInitializing}
+          aria-label="Sente/Gote Settings"
+        >
+          <LuSettings size={16} />
+        </button>
+        <button
+          className="analysis-action-button"
+          title={
+            senteGoteCache.size > 0
+              ? `Clear Sente/Gote Cache (${senteGoteCache.size} positions)`
+              : 'No Cached Sente/Gote Data'
+          }
+          onClick={clearSenteGoteCache}
+          disabled={senteGoteCache.size === 0 || isSenteGoteAnalyzing}
+          aria-label="Clear Sente/Gote Cache"
+        >
+          <LuTrash2 size={16} />
+        </button>
+
+        <div className="analysis-toolbar-spacer" />
         <span
           className="analysis-positions-count"
           title={t('analysis.positionsAnalyzed', {
@@ -233,6 +298,15 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         >
           {analyzedCount}/{totalPositions}
         </span>
+        {senteGoteCache.size > 0 && (
+          <span
+            className="analysis-positions-count"
+            title={`Sente/Gote: ${senteGoteCache.size} positions analyzed`}
+            style={{ marginLeft: '8px', color: '#51CF66' }}
+          >
+            S/G: {senteGoteCache.size}
+          </span>
+        )}
       </div>
 
       {(isInitializing || isAnalyzing) && (
@@ -264,6 +338,32 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         </div>
       )}
 
+      {/* Sente/Gote Progress bar */}
+      {isSenteGoteAnalyzing && (
+        <div
+          className="analysis-progress-inline"
+          style={{ backgroundColor: 'rgba(81, 207, 102, 0.1)' }}
+        >
+          <span className="analysis-progress-label">
+            Sente/Gote: {senteGoteCurrent}/{senteGoteTotal} ({Math.round(senteGoteProgress)}%)
+            {senteGoteETA && ` - ETA: ${senteGoteETA}`}
+          </span>
+          <div className="analysis-progress-bar-inline">
+            <div
+              className="analysis-progress-bar"
+              style={{ width: `${senteGoteProgress}%`, backgroundColor: '#51CF66' }}
+            />
+          </div>
+          <button
+            className="analysis-stop-button-small"
+            onClick={stopSenteGoteAnalysis}
+            title="Stop Sente/Gote Analysis"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Always show the chart - allows clicking to navigate even without analysis */}
       <AnalysisChart
         data={dataPoints}
@@ -280,6 +380,11 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       <AnalysisLegendModal
         isOpen={showMoveStrengthInfo}
         onClose={() => setShowMoveStrengthInfo(false)}
+      />
+
+      <SenteGoteSettingsModal
+        isOpen={showSenteGoteSettings}
+        onClose={() => setShowSenteGoteSettings(false)}
       />
     </div>
   );

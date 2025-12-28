@@ -9,6 +9,7 @@ import {
   BoardNavigationProvider,
   GameControllerManagerProvider,
   AIAnalysisProvider,
+  SenteGoteProvider,
   AppDropZone,
   GameInfoEditor,
   GameInfoHeaderActions,
@@ -439,9 +440,11 @@ function AppWithToast({ versionData }: { versionData: VersionData | undefined })
     <GameControllerManagerProvider>
       <GameTreeProvider onAutoSaveDisabled={handleAutoSaveDisabled}>
         <AIAnalysisProvider>
-          <BoardNavigationProvider>
-            <LibraryProviderWrapper versionData={versionData} />
-          </BoardNavigationProvider>
+          <SenteGoteProvider>
+            <BoardNavigationProvider>
+              <LibraryProviderWrapper versionData={versionData} />
+            </BoardNavigationProvider>
+          </SenteGoteProvider>
         </AIAnalysisProvider>
       </GameTreeProvider>
     </GameControllerManagerProvider>

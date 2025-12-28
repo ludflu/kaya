@@ -60,3 +60,9 @@ export * from './sgf-utils';
 
 // High-level APIs
 export * from './analyze';
+
+// Sente/Gote Analysis
+export * from './sente-gote-types';
+export * from './sente-gote-utils';
+export * from './sente-gote-analysis';
+export * from './sente-gote-sgf';

@@ -31,6 +31,7 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useGameTree, useGameTreeCore } from '../../contexts/GameTreeContext';
+import { useSenteGote } from '../../contexts/SenteGoteContext';
 import { rafThrottle } from '../../utils/throttle';
 import type { GameTreeNode } from '@kaya/gametree';
 import type { SGFProperty } from '../../contexts/GameTreeContext';
@@ -130,6 +131,7 @@ const StoneNode = React.memo(({ data }: { data: any }) => {
     isRoot,
     nodeId,
     isPass,
+    senteGote,
   } = data;
 
   // Calculate isCurrent directly from context
@@ -251,6 +253,54 @@ const StoneNode = React.memo(({ data }: { data: any }) => {
               boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
             }}
           />
+        )}
+        {senteGote && senteGote.classification === 'sente' && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              left: -2,
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              backgroundColor: senteGote.confidence > 0.7 ? '#51CF66' : '#FCC419', // Green for strong, yellow for weak
+              border: '1px solid rgba(0, 0, 0, 0.3)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+              fontSize: '6px',
+              fontWeight: 'bold',
+              color: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            title={`Sente (${(senteGote.confidence * 100).toFixed(0)}%): ${senteGote.reason}`}
+          >
+            S
+          </div>
+        )}
+        {senteGote && senteGote.classification === 'gote' && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              left: -2,
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              backgroundColor: '#ADB5BD', // Gray for gote
+              border: '1px solid rgba(0, 0, 0, 0.3)',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+              fontSize: '6px',
+              fontWeight: 'bold',
+              color: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            title={`Gote (${(senteGote.confidence * 100).toFixed(0)}%): ${senteGote.reason}`}
+          >
+            G
+          </div>
         )}
       </div>
       <Handle type="source" position={sourcePosition} style={sourceHandleStyle} />
@@ -463,7 +513,9 @@ function buildNodeMap(
 function buildGraphElements(
   rootNode: GameTreeNode<SGFProperty>,
   currentNodeId: string | number | null,
-  horizontal: boolean
+  horizontal: boolean,
+  getSenteGoteForNode?: (nodeId: number | string | null) => any,
+  showSenteGote?: boolean
 ): { nodes: Node[]; edges: Edge[]; includedNodeIds: Set<string | number> } {
   const MAX_NODES = 1000;
 
@@ -584,6 +636,9 @@ function buildGraphElements(
     const isPass = isPassNode(n);
     const moveNum = moveNumbers.get(n.id) ?? 0;
 
+    // Get sente/gote data if available
+    const senteGoteData = showSenteGote && getSenteGoteForNode ? getSenteGoteForNode(n.id) : null;
+
     nodes.push({
       id: String(n.id),
       type: 'stone',
@@ -598,6 +653,7 @@ function buildGraphElements(
         horizontal,
         isRoot,
         isPass,
+        senteGote: senteGoteData,
       },
     });
   }
@@ -631,6 +687,7 @@ const LOCAL_STORAGE_ZOOM_KEY = 'kaya-game-tree-zoom';
 export const GameTreeGraph = forwardRef<GameTreeGraphRef, GameTreeGraphProps>(
   ({ horizontal: controlledHorizontal, onLayoutChange, showMinimap = false }, ref) => {
     const { gameTree, rootId, currentNodeId, goToNode } = useGameTree();
+    const { getSenteGoteForNode, senteGoteSettings } = useSenteGote();
     const [internalHorizontal, setInternalHorizontal] = React.useState(true);
     const [nodes, setNodes] = useState<Node[]>([]);
     const [edges, setEdges] = useState<Edge[]>([]);
@@ -818,7 +875,13 @@ export const GameTreeGraph = forwardRef<GameTreeGraphRef, GameTreeGraphProps>(
           nodes: rawNodes,
           edges: rawEdges,
           includedNodeIds,
-        } = buildGraphElements(root, currentNodeId, horizontal);
+        } = buildGraphElements(
+          root,
+          currentNodeId,
+          horizontal,
+          getSenteGoteForNode,
+          senteGoteSettings.showInTree
+        );
 
         const applyLayout = (layoutedNodes: Node[], layoutedEdges: Edge[]) => {
           // Don't update isCurrent in node data - StoneNode will calculate it from context

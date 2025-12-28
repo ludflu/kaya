@@ -17,6 +17,9 @@ export {
 } from './contexts/AIAnalysisContext';
 export type { AIAnalysisContextValue } from './contexts/AIAnalysisContext';
 
+export { SenteGoteProvider, useSenteGote } from './contexts/SenteGoteContext';
+export type { SenteGoteContextValue, SenteGoteSettings } from './contexts/SenteGoteContext';
+
 // Optimized context selectors (use these instead of useGameTree for better performance)
 export {
   useGameTreeSelector,
