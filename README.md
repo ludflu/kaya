@@ -77,28 +77,10 @@ Kaya is built with modern, performant technologies:
 
 We welcome contributions! Whether it's bug reports, feature requests, or code contributions.
 
-### For Users
-
 - 🐛 [Report a bug](https://github.com/kaya-go/kaya/issues/new)
 - 💡 [Suggest a feature](https://github.com/kaya-go/kaya/issues/new)
 - 📖 [Improve documentation](https://github.com/kaya-go/kaya/pulls)
-
-### For Developers
-
-```bash
-git clone https://github.com/kaya-go/kaya.git
-cd kaya
-
-# Development
-bun run dev            # Desktop app with hot reload
-bun run dev:web        # Web app at http://localhost:3000
-
-# Build
-bun run build          # Desktop app
-bun run build:web      # Web app
-```
-
-📚 **Developer Documentation**: See [DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) for detailed setup and architecture.
+- 🛠️ **[Contributing Guide](CONTRIBUTING.md)** - Get started with development
 
 ---
 
