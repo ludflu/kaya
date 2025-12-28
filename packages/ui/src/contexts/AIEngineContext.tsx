@@ -11,8 +11,8 @@ import React, { createContext, useContext, useEffect, useState, useCallback, use
 import type { Engine } from '@kaya/ai-engine';
 import { useGameTree } from './GameTreeContext';
 import { isTauriApp } from '../services/fileSave';
-import { WorkerEngine } from '../workers/WorkerEngine';
 import { loadModelData } from '../services/modelStorage';
+import { createEngine, type CreateEngineOptions } from '../workers/engineFactory';
 
 // Global state for singleton engine management
 let globalEngineInstance: Engine | null = null;
@@ -162,51 +162,15 @@ export const AIEngineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
           const isTauri = isTauriApp();
 
-          const useNativeEngine =
-            isTauri && (aiSettings.backend === 'native' || aiSettings.backend === 'native-cpu');
-
-          if (useNativeEngine) {
-            try {
-              // @ts-ignore - dynamic import might not have types in all contexts
-              const { TauriEngine } = await import('@kaya/ai-engine/tauri-engine');
-
-              const modelId = customAIModel?.name?.replace(/[^a-zA-Z0-9-_]/g, '_') ?? 'default';
-              const executionProvider = aiSettings.backend === 'native-cpu' ? 'cpu' : 'auto';
-
-              const newEngine = new TauriEngine({
-                maxMoves: 10,
-                enableCache: true,
-                modelBuffer: buffer,
-                modelId,
-                executionProvider,
-                onProgress: (progress: any) => {
-                  setNativeUploadProgress({
-                    stage: progress.stage,
-                    progress: progress.progress,
-                    message: progress.message,
-                  });
-                },
-              });
-
-              await newEngine.initialize();
-              setNativeUploadProgress(null);
-              return newEngine;
-            } catch (tauriError) {
-              console.error(
-                '[AIEngine] TauriEngine failed, falling back to web engine:',
-                tauriError
-              );
-            }
+          // Determine engine type based on backend setting
+          let engineType: CreateEngineOptions['engineType'] = 'web';
+          if (isTauri && (aiSettings.backend === 'native' || aiSettings.backend === 'native-cpu')) {
+            engineType = 'native';
           }
 
-          // Use web-based ONNX Runtime
-          const worker = new Worker(new URL('../workers/ai.worker.js', import.meta.url), {
-            type: 'module',
-          });
-
+          // Compute WASM path for web engine
           // @ts-ignore
           const envPrefix = (import.meta as any).env?.VITE_ASSET_PREFIX;
-
           let wasmPath: string;
           if (isTauri) {
             wasmPath = '/wasm/';
@@ -216,6 +180,7 @@ export const AIEngineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             wasmPath = new URL('wasm/', document.baseURI || window.location.href).href;
           }
 
+          // Determine execution providers for web engine
           let executionProviders: string[];
           if (aiSettings.backend === 'webgpu') {
             executionProviders = ['webgpu', 'wasm'];
@@ -223,16 +188,32 @@ export const AIEngineProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             executionProviders = ['wasm'];
           }
 
-          const newEngine = new WorkerEngine(worker, {
-            maxMoves: 10,
-            enableCache: true,
-            modelBuffer: buffer,
-            wasmPath,
-            executionProviders,
-            numThreads: Math.min(8, navigator.hardwareConcurrency || 4),
-          });
+          const newEngine = await createEngine(
+            {
+              modelBuffer: buffer,
+              modelId: customAIModel?.name?.replace(/[^a-zA-Z0-9-_]/g, '_') ?? 'default',
+              executionProvider: aiSettings.backend === 'native-cpu' ? 'cpu' : 'auto',
+              engineType,
+              wasmPath,
+              executionProviders,
+              maxMoves: 10,
+              enableCache: true,
+              numThreads: Math.min(8, navigator.hardwareConcurrency || 4),
+              onProgress: progress => {
+                setNativeUploadProgress({
+                  stage: progress.stage,
+                  progress: progress.progress,
+                  message: progress.message,
+                });
+              },
+            },
+            () =>
+              new Worker(new URL('../workers/ai.worker.js', import.meta.url), {
+                type: 'module',
+              })
+          );
 
-          await newEngine.initialize();
+          setNativeUploadProgress(null);
           return newEngine;
         })();
       }
