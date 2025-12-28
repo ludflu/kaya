@@ -1,0 +1,2 @@
+"use strict";(self.webpackChunk_kaya_web=self.webpackChunk_kaya_web||[]).push([["636"],{615(a,e,n){n.d(e,{open:()=>k});var s=n(296);async function k(a,e){await (0,s.lA)("plugin:shell|open",{path:a,with:e})}}}]);
+//# sourceMappingURL=636.bccb7e5f.js.map
