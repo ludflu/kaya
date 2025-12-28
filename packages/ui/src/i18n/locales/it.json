@@ -152,7 +152,9 @@
     "analyzing": "Analizzando...",
     "stopping": "Fermando...",
     "analyzingProgress": "Analizzando: {{progress}}%",
-    "stopAnalysisButton": "Ferma analisi"
+    "stopAnalysisButton": "Ferma analisi",
+    "analysisModeOn": "Modalità analisi attiva - Clicca per disattivare",
+    "analysisModeOff": "Modalità analisi disattiva - Clicca per attivare"
   },
 
   "analysisLegend": {
@@ -414,12 +416,20 @@
     "exitScoringMode": "Esci dalla modalità punteggio (S)",
     "showAnalysis": "Mostra barra analisi (A)",
     "hideAnalysis": "Nascondi barra analisi (A)",
+    "analysisActiveHidden": "Modalità analisi attiva (clicca per mostrare pannello)",
     "enterNavigationMode": "Attiva modalità navigazione (N)",
     "exitNavigationMode": "Esci dalla modalità navigazione (N)",
     "enterEditMode": "Attiva modalità modifica (E)",
     "exitEditMode": "Esci dalla modalità modifica (E)",
     "showNextMove": "Mostra prossima mossa",
-    "hideNextMove": "Nascondi prossima mossa"
+    "hideNextMove": "Nascondi prossima mossa",
+    "suggestMove": "Suggerisci mossa",
+    "suggestMoveTitle": "Chiedi all'IA di suggerire una mossa (G)",
+    "suggesting": "Suggerendo...",
+    "loadAiModelFirst": "Carica prima un modello AI",
+    "initializingAiEngine": "Inizializzazione motore AI...",
+    "aiEngineInitializing": "Il motore AI si sta inizializzando, riprova",
+    "failedToGenerateMove": "Generazione mossa AI fallita"
   },
 
   "analysisBar": {

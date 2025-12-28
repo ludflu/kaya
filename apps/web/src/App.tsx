@@ -26,6 +26,7 @@ import {
   useToast,
   LibraryProvider,
   LibraryPanel,
+  AIEngineProvider,
   AIAnalysisProvider,
   useLibrary,
   useLibraryPanel,
@@ -529,11 +530,13 @@ function AppWithToast({ versionData }: { versionData: VersionData | undefined })
   return (
     <GameControllerManagerProvider>
       <GameTreeProvider onAutoSaveDisabled={handleAutoSaveDisabled}>
-        <AIAnalysisProvider>
-          <BoardNavigationProvider>
-            <LibraryProviderWrapper versionData={versionData} />
-          </BoardNavigationProvider>
-        </AIAnalysisProvider>
+        <AIEngineProvider>
+          <AIAnalysisProvider>
+            <BoardNavigationProvider>
+              <LibraryProviderWrapper versionData={versionData} />
+            </BoardNavigationProvider>
+          </AIAnalysisProvider>
+        </AIEngineProvider>
       </GameTreeProvider>
     </GameControllerManagerProvider>
   );

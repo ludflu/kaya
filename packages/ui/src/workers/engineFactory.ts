@@ -34,6 +34,12 @@ export interface CreateEngineOptions {
   /** Model file path (for Tauri native) */
   modelPath?: string;
 
+  /** Model ID for caching (for Tauri native) */
+  modelId?: string;
+
+  /** Execution provider for native engine ('auto' | 'cpu') */
+  executionProvider?: 'auto' | 'cpu';
+
   /** Path to WASM files (for web) */
   wasmPath?: string;
 
@@ -59,6 +65,9 @@ export interface CreateEngineOptions {
    * - 'auto': Auto-detect based on environment (default)
    */
   engineType?: 'native' | 'web' | 'auto';
+
+  /** Progress callback for native engine model upload (Tauri only) */
+  onProgress?: (progress: { stage: string; progress: number; message: string }) => void;
 }
 
 /**
@@ -91,9 +100,12 @@ export async function createEngine(
     const engine = new TauriEngine({
       modelBuffer: options.modelBuffer,
       modelPath: options.modelPath,
+      modelId: options.modelId,
+      executionProvider: options.executionProvider ?? 'auto',
       enableCache: options.enableCache ?? true,
       maxMoves: options.maxMoves ?? 10,
       debug: options.debug,
+      onProgress: options.onProgress,
     });
 
     await engine.initialize();

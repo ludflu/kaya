@@ -245,6 +245,22 @@ export abstract class Engine {
   }
 
   /**
+   * Generate a move for the current position
+   * Returns the best move as a GTP coordinate string (e.g., "D4", "Q16", "PASS")
+   *
+   * Default implementation uses analyze() and returns the top move suggestion.
+   * Engines can override this for specialized move generation logic.
+   *
+   * @param signMap - Board position to generate a move for
+   * @param options - Analysis options
+   * @returns Move in GTP coordinate format
+   */
+  async generateMove(signMap: SignMap, options: EngineAnalysisOptions = {}): Promise<string> {
+    const result = await this.analyze(signMap, options);
+    return result.moveSuggestions[0]?.move ?? 'PASS';
+  }
+
+  /**
    * Analyze multiple positions (batch analysis)
    *
    * @param positions - Array of board positions to analyze

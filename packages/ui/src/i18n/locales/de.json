@@ -152,7 +152,9 @@
     "analyzing": "Analysiere...",
     "stopping": "Stoppe...",
     "analyzingProgress": "Analysiere: {{progress}}%",
-    "stopAnalysisButton": "Analyse stoppen"
+    "stopAnalysisButton": "Analyse stoppen",
+    "analysisModeOn": "Analyse-Modus aktiv - Klicken zum Deaktivieren",
+    "analysisModeOff": "Analyse-Modus inaktiv - Klicken zum Aktivieren"
   },
 
   "analysisLegend": {
@@ -414,12 +416,20 @@
     "exitScoringMode": "Wertungsmodus beenden (S)",
     "showAnalysis": "Analyseleiste anzeigen (A)",
     "hideAnalysis": "Analyseleiste ausblenden (A)",
+    "analysisActiveHidden": "Analysemodus aktiv (klicken zum Anzeigen)",
     "enterNavigationMode": "Navigationsmodus aktivieren (N)",
     "exitNavigationMode": "Navigationsmodus beenden (N)",
     "enterEditMode": "Bearbeitungsmodus aktivieren (E)",
     "exitEditMode": "Bearbeitungsmodus beenden (E)",
     "showNextMove": "Nächsten Zug anzeigen",
-    "hideNextMove": "Nächsten Zug ausblenden"
+    "hideNextMove": "Nächsten Zug ausblenden",
+    "suggestMove": "Zug vorschlagen",
+    "suggestMoveTitle": "KI nach einem Zug fragen (G)",
+    "suggesting": "Vorschlagen...",
+    "loadAiModelFirst": "Bitte laden Sie zuerst ein KI-Modell",
+    "initializingAiEngine": "KI-Engine wird initialisiert...",
+    "aiEngineInitializing": "KI-Engine wird initialisiert, bitte erneut versuchen",
+    "failedToGenerateMove": "Fehler bei der KI-Zugvorschlag"
   },
 
   "analysisBar": {

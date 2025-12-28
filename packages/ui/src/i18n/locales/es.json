@@ -152,7 +152,9 @@
     "analyzing": "Analizando...",
     "stopping": "Deteniendo...",
     "analyzingProgress": "Analizando: {{progress}}%",
-    "stopAnalysisButton": "Detener análisis"
+    "stopAnalysisButton": "Detener análisis",
+    "analysisModeOn": "Modo análisis activado - Haz clic para desactivar",
+    "analysisModeOff": "Modo análisis desactivado - Haz clic para activar"
   },
 
   "analysisLegend": {
@@ -414,12 +416,20 @@
     "exitScoringMode": "Salir del modo puntuación (S)",
     "showAnalysis": "Mostrar barra de análisis (A)",
     "hideAnalysis": "Ocultar barra de análisis (A)",
+    "analysisActiveHidden": "Modo de análisis activo (clic para mostrar panel)",
     "enterNavigationMode": "Activar modo navegación (N)",
     "exitNavigationMode": "Salir del modo navegación (N)",
     "enterEditMode": "Activar modo edición (E)",
     "exitEditMode": "Salir del modo edición (E)",
     "showNextMove": "Mostrar siguiente movimiento",
-    "hideNextMove": "Ocultar siguiente movimiento"
+    "hideNextMove": "Ocultar siguiente movimiento",
+    "suggestMove": "Sugerir jugada",
+    "suggestMoveTitle": "Pedir a la IA que sugiera una jugada (G)",
+    "suggesting": "Sugiriendo...",
+    "loadAiModelFirst": "Por favor, carga primero un modelo de IA",
+    "initializingAiEngine": "Inicializando motor de IA...",
+    "aiEngineInitializing": "El motor de IA se está inicializando, inténtalo de nuevo",
+    "failedToGenerateMove": "Error al generar jugada de IA"
   },
 
   "analysisBar": {

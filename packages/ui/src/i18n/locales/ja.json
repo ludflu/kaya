@@ -152,7 +152,9 @@
     "analyzing": "分析中...",
     "stopping": "停止中...",
     "analyzingProgress": "分析中: {{progress}}%",
-    "stopAnalysisButton": "分析を停止"
+    "stopAnalysisButton": "分析を停止",
+    "analysisModeOn": "分析モードがオン - クリックで無効化",
+    "analysisModeOff": "分析モードがオフ - クリックで有効化"
   },
 
   "analysisLegend": {
@@ -417,12 +419,20 @@
     "exitScoringMode": "計算モード終了 (S)",
     "showAnalysis": "分析バーを表示 (A)",
     "hideAnalysis": "分析バーを非表示 (A)",
+    "analysisActiveHidden": "分析モードがアクティブ（クリックでパネル表示）",
     "enterNavigationMode": "ナビゲーションモード開始 (N)",
     "exitNavigationMode": "ナビゲーションモード終了 (N)",
     "enterEditMode": "編集モード開始 (E)",
     "exitEditMode": "編集モード終了 (E)",
     "showNextMove": "次の手を表示",
-    "hideNextMove": "次の手を非表示"
+    "hideNextMove": "次の手を非表示",
+    "suggestMove": "手を提案",
+    "suggestMoveTitle": "AIに手を提案してもらう (G)",
+    "suggesting": "提案中...",
+    "loadAiModelFirst": "まずAIモデルをロードしてください",
+    "initializingAiEngine": "AIエンジンを初期化中...",
+    "aiEngineInitializing": "AIエンジンが初期化中です。もう一度お試しください",
+    "failedToGenerateMove": "AI手の生成に失敗しました"
   },
 
   "analysisBar": {
