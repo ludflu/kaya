@@ -822,103 +822,137 @@
 }
 
 /* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .ai-info-modal {
-    background-color: #1e1e1e;
-    border-color: #333;
-  }
+[data-theme='dark'] .ai-info-modal {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
 
-  .ai-info-header {
-    background-color: #252525;
-    border-color: #333;
-  }
+[data-theme='dark'] .ai-info-header {
+  background-color: #252525;
+  border-color: #333;
+}
 
-  .ai-info-title,
-  .model-library-name,
-  .legend-text strong,
-  .setting-label {
-    color: #eee;
-  }
+[data-theme='dark'] .ai-info-title,
+[data-theme='dark'] .model-library-name,
+[data-theme='dark'] .legend-text strong,
+[data-theme='dark'] .setting-label,
+[data-theme='dark'] .model-base-name,
+[data-theme='dark'] .model-variant-name {
+  color: #eee;
+}
 
-  .ai-info-close {
-    color: #aaa;
-  }
+[data-theme='dark'] .ai-info-close {
+  color: #aaa;
+}
 
-  .ai-info-close:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #fff;
-  }
+[data-theme='dark'] .ai-info-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
 
-  .ai-config-section {
-    border-color: #333;
-  }
+[data-theme='dark'] .ai-config-section {
+  border-color: #333;
+}
 
-  .section-header,
-  .config-note,
-  .legend-text span,
-  .setting-description,
-  .model-library-meta {
-    color: #aaa;
-  }
+[data-theme='dark'] .section-header,
+[data-theme='dark'] .config-note,
+[data-theme='dark'] .legend-text span,
+[data-theme='dark'] .setting-description,
+[data-theme='dark'] .model-library-meta,
+[data-theme='dark'] .model-base-meta,
+[data-theme='dark'] .model-variant-meta {
+  color: #aaa;
+}
 
-  .setting-item {
-    border-color: #333;
-  }
+[data-theme='dark'] .setting-item {
+  border-color: #333;
+}
 
-  .setting-value {
-    background-color: rgba(0, 123, 255, 0.15);
-  }
+[data-theme='dark'] .setting-value {
+  background-color: rgba(0, 123, 255, 0.15);
+}
 
-  .toggle-switch {
-    background-color: #444;
-  }
+[data-theme='dark'] .toggle-switch {
+  background-color: #444;
+}
 
-  .toggle-switch:hover {
-    background-color: #555;
-  }
+[data-theme='dark'] .toggle-switch:hover {
+  background-color: #555;
+}
 
-  .model-library-item {
-    background-color: #252525;
-    border-color: #333;
-  }
+[data-theme='dark'] .model-library-item {
+  background-color: #252525;
+  border-color: #333;
+}
 
-  .model-library-item.downloaded:hover {
-    background-color: #2d2d2d;
-    border-color: #007bff;
-  }
+[data-theme='dark'] .model-library-item.downloaded:hover {
+  background-color: #2d2d2d;
+  border-color: #007bff;
+}
 
-  .model-library-item.selected {
-    background-color: rgba(0, 123, 255, 0.1);
-  }
+[data-theme='dark'] .model-library-item.selected {
+  background-color: rgba(0, 123, 255, 0.1);
+}
 
-  .model-action-btn {
-    background-color: #2d2d2d;
-    border-color: #444;
-    color: #eee;
-  }
+[data-theme='dark'] .model-action-btn {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #eee;
+}
 
-  .model-action-btn:hover:not(:disabled) {
-    background-color: #383838;
-    border-color: #007bff;
-  }
+[data-theme='dark'] .model-action-btn:hover:not(:disabled) {
+  background-color: #383838;
+  border-color: #007bff;
+}
 
-  .model-upload-btn {
-    color: #aaa;
-    border-color: #444;
-  }
+[data-theme='dark'] .model-upload-btn {
+  color: #aaa;
+  border-color: #444;
+}
 
-  .model-upload-btn:hover:not(:disabled) {
-    color: #007bff;
-    border-color: #007bff;
-  }
+[data-theme='dark'] .model-upload-btn:hover:not(:disabled) {
+  color: #007bff;
+  border-color: #007bff;
+}
 
-  .ai-select {
-    background-color: #2d2d2d;
-    border-color: #444;
-    color: #eee;
-  }
+[data-theme='dark'] .ai-select {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #eee;
+}
 
-  .ai-slider {
-    background: #444;
-  }
+[data-theme='dark'] .ai-slider {
+  background: #444;
+}
+
+[data-theme='dark'] .model-base-group {
+  border-color: #333;
+}
+
+[data-theme='dark'] .model-base-header {
+  background-color: #252525;
+}
+
+[data-theme='dark'] .model-base-header:hover {
+  background-color: #2d2d2d;
+}
+
+[data-theme='dark'] .model-base-header.expanded {
+  border-color: #333;
+}
+
+[data-theme='dark'] .model-variants-list {
+  background-color: #1e1e1e;
+}
+
+[data-theme='dark'] .model-variant-item {
+  border-color: #333;
+}
+
+[data-theme='dark'] .model-variant-item.downloaded:hover {
+  background-color: #2d2d2d;
+}
+
+[data-theme='dark'] .model-variant-size {
+  background-color: #333;
 }

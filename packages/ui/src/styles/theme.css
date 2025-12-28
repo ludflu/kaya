@@ -34,6 +34,7 @@
   --text-disabled: #656565;
 
   --accent-primary: #007acc;
+  --accent-color: #007acc;
   --accent-hover: #1c8ad6;
   --accent-active: #0062a3;
 
@@ -60,6 +61,7 @@
   --text-disabled: #a0a0a0;
 
   --accent-primary: #0078d4;
+  --accent-color: #0078d4;
   --accent-hover: #106ebe;
   --accent-active: #005a9e;
 
