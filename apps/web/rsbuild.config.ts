@@ -70,6 +70,15 @@ export default defineConfig({
     },
     port: 3000,
   },
+  dev: {
+    // Disable HMR for workers - they don't have WebSocket/DOM access
+    // Manual refresh required during development
+    hmr: false,
+    liveReload: false,
+    client: {
+      overlay: false,
+    },
+  },
   tools: {
     rspack: {
       resolve: {

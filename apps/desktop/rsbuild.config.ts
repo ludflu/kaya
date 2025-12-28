@@ -54,6 +54,15 @@ export default defineConfig({
     },
     target: 'web',
   },
+  dev: {
+    // Disable HMR for workers - they don't have WebSocket/DOM access
+    // Manual refresh required during development
+    hmr: false,
+    liveReload: false,
+    client: {
+      overlay: false,
+    },
+  },
   server: {
     port: 1420,
     strictPort: true,
