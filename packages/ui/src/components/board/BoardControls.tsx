@@ -70,7 +70,7 @@ export const BoardControls: React.FC = memo(() => {
   const { scoringMode, toggleScoringMode, autoEstimateDeadStones, clearDeadStones, isEstimating } =
     useGameTreeScore();
   const { navigationMode } = useBoardNavigation();
-  const { customAIModel } = useGameTree();
+  const { isModelLoaded, analysisMode, setAnalysisMode } = useGameTree();
   const { aiEngine } = useAIAnalysis();
   const { showToast } = useToast();
   const [showResignConfirm, setShowResignConfirm] = useState(false);
@@ -257,8 +257,20 @@ export const BoardControls: React.FC = memo(() => {
 
   // Handler for AI move generation
   const handleGenerateAIMove = useCallback(async () => {
-    if (!aiEngine || !customAIModel) {
+    if (!isModelLoaded) {
       showToast('Please load an AI model first', 'error');
+      return;
+    }
+
+    // Enable analysis mode if not already enabled (to initialize the engine)
+    if (!analysisMode) {
+      setAnalysisMode(true);
+      showToast('Initializing AI engine...', 'info');
+      return;
+    }
+
+    if (!aiEngine) {
+      showToast('AI engine is initializing, please try again', 'info');
       return;
     }
 
@@ -303,7 +315,17 @@ export const BoardControls: React.FC = memo(() => {
     } finally {
       setIsGeneratingMove(false);
     }
-  }, [aiEngine, customAIModel, currentBoard, currentPlayer, gameInfo.komi, playMove, showToast]);
+  }, [
+    isModelLoaded,
+    analysisMode,
+    setAnalysisMode,
+    aiEngine,
+    currentBoard,
+    currentPlayer,
+    gameInfo.komi,
+    playMove,
+    showToast,
+  ]);
 
   // Handlers for inline editing
   const handleMoveClick = useCallback(() => {
@@ -411,7 +433,7 @@ export const BoardControls: React.FC = memo(() => {
         ) : (
           <>
             {/* AI Move Generation */}
-            {aiEngine && customAIModel && 'generateMove' in aiEngine && (
+            {isModelLoaded && (
               <div className="ai-move-row">
                 <button
                   onClick={handleGenerateAIMove}
