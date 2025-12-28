@@ -77,6 +77,9 @@ export interface AIAnalysisContextValue {
 
   // Fallback notification
   backendFallbackMessage: string | null;
+
+  // Engine
+  aiEngine: Engine | null;
 }
 
 const AIAnalysisContext = createContext<AIAnalysisContextValue | null>(null);
@@ -1085,6 +1088,7 @@ export const AIAnalysisProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     pendingFullGameAnalysis,
     nativeUploadProgress,
     backendFallbackMessage,
+    aiEngine: engine,
   };
 
   return <AIAnalysisContext.Provider value={value}>{children}</AIAnalysisContext.Provider>;

@@ -35,6 +35,7 @@ import {
 } from '../../contexts/selectors';
 import { useBoardNavigation } from '../../contexts/BoardNavigationContext';
 import { useGameTree } from '../../contexts/GameTreeContext';
+import { useAIAnalysis } from '../../contexts/AIAnalysisContext';
 import { ConfirmationDialog } from '../dialogs/ConfirmationDialog';
 import { useToast } from '../ui/Toast';
 import './BoardControls.css';
@@ -69,7 +70,8 @@ export const BoardControls: React.FC = memo(() => {
   const { scoringMode, toggleScoringMode, autoEstimateDeadStones, clearDeadStones, isEstimating } =
     useGameTreeScore();
   const { navigationMode } = useBoardNavigation();
-  const { aiEngine, customAIModel } = useGameTree();
+  const { customAIModel } = useGameTree();
+  const { aiEngine } = useAIAnalysis();
   const { showToast } = useToast();
   const [showResignConfirm, setShowResignConfirm] = useState(false);
   const [isGeneratingMove, setIsGeneratingMove] = useState(false);
@@ -260,6 +262,12 @@ export const BoardControls: React.FC = memo(() => {
       return;
     }
 
+    // Check if the engine supports generateMove (only TauriEngine has this method)
+    if (!('generateMove' in aiEngine)) {
+      showToast('Move generation is only available with native engine', 'error');
+      return;
+    }
+
     setIsGeneratingMove(true);
     try {
       // Get the current board state
@@ -269,7 +277,7 @@ export const BoardControls: React.FC = memo(() => {
       const nextToPlay = currentPlayer === 1 ? 'B' : 'W';
 
       // Generate the move
-      const moveStr = await aiEngine.generateMove(signMap, {
+      const moveStr = await (aiEngine as any).generateMove(signMap, {
         komi: gameInfo.komi ?? 7.5,
         nextToPlay,
       });
@@ -403,7 +411,7 @@ export const BoardControls: React.FC = memo(() => {
         ) : (
           <>
             {/* AI Move Generation */}
-            {aiEngine && customAIModel && (
+            {aiEngine && customAIModel && 'generateMove' in aiEngine && (
               <div className="ai-move-row">
                 <button
                   onClick={handleGenerateAIMove}
