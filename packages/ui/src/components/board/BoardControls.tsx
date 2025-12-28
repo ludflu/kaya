@@ -38,6 +38,7 @@ import { useGameTree } from '../../contexts/GameTreeContext';
 import { useAIAnalysis } from '../../contexts/AIAnalysisContext';
 import { ConfirmationDialog } from '../dialogs/ConfirmationDialog';
 import { useToast } from '../ui/Toast';
+import { parseGTPCoordinate } from '../../utils/gtpUtils';
 import './BoardControls.css';
 
 export const BoardControls: React.FC = memo(() => {
@@ -295,19 +296,14 @@ export const BoardControls: React.FC = memo(() => {
       });
 
       // Parse the move and play it
-      if (moveStr === 'PASS') {
+      const vertex = parseGTPCoordinate(moveStr, currentBoard.width);
+
+      if (vertex === null) {
+        // PASS move
         playMove([-1, -1], currentPlayer);
       } else {
-        // Parse GTP format (e.g., "D4")
-        const letters = 'ABCDEFGHJKLMNOPQRST';
-        const x = letters.indexOf(moveStr[0].toUpperCase());
-        const y = currentBoard.height - parseInt(moveStr.slice(1), 10);
-
-        if (x >= 0 && y >= 0 && x < currentBoard.width && y < currentBoard.height) {
-          playMove([x, y], currentPlayer);
-        } else {
-          showToast('Invalid move generated', 'error');
-        }
+        // Valid coordinate move
+        playMove(vertex, currentPlayer);
       }
     } catch (error) {
       console.error('Failed to generate AI move:', error);
