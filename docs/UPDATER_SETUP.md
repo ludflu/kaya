@@ -148,7 +148,6 @@ The signature verification failed. Check:
 
 - Check file permissions
 - Ensure the app is not running when installing the update
-- On macOS, run: `xattr -cr /Applications/Kaya.app`
 
 ## Security
 

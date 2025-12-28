@@ -481,13 +481,6 @@ jobs:
 
             Download the appropriate file for your platform and follow the installation instructions.
 
-            ### macOS Users
-
-            If you see a "damaged" or "unidentified developer" warning:
-            1. Install the app to your **Applications** folder.
-            2. Open Terminal and run: `xattr -cr /Applications/Kaya.app`
-            3. Launch the app.
-
   bump-dev-version:
     name: Bump to Next Dev Version
     needs: commit-and-release
