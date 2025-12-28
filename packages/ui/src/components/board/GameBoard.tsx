@@ -591,12 +591,6 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
       return;
     }
 
-    // Check if the engine supports generateMove (only TauriEngine has this method)
-    if (!('generateMove' in aiEngine)) {
-      showToast('Move generation is only available with native engine', 'error');
-      return;
-    }
-
     setIsGeneratingMove(true);
     try {
       // Get the current board state
@@ -605,8 +599,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
       // Determine whose turn it is (use existing currentPlayer from component scope)
       const nextToPlay = currentPlayer === 1 ? 'B' : 'W';
 
-      // Generate the move
-      const moveStr = await (aiEngine as any).generateMove(signMap, {
+      const moveStr = await aiEngine.generateMove(signMap, {
         komi: gameInfo.komi ?? 7.5,
         nextToPlay,
       });
