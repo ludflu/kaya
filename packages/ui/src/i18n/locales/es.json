@@ -419,7 +419,14 @@
     "enterEditMode": "Activar modo edición (E)",
     "exitEditMode": "Salir del modo edición (E)",
     "showNextMove": "Mostrar siguiente movimiento",
-    "hideNextMove": "Ocultar siguiente movimiento"
+    "hideNextMove": "Ocultar siguiente movimiento",
+    "suggestMove": "Sugerir jugada",
+    "suggestMoveTitle": "Pedir a la IA que sugiera una jugada (G)",
+    "suggesting": "Sugiriendo...",
+    "loadAiModelFirst": "Por favor, carga primero un modelo de IA",
+    "initializingAiEngine": "Inicializando motor de IA...",
+    "aiEngineInitializing": "El motor de IA se está inicializando, inténtalo de nuevo",
+    "failedToGenerateMove": "Error al generar jugada de IA"
   },
 
   "analysisBar": {

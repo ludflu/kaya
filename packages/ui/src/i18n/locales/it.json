@@ -419,7 +419,14 @@
     "enterEditMode": "Attiva modalità modifica (E)",
     "exitEditMode": "Esci dalla modalità modifica (E)",
     "showNextMove": "Mostra prossima mossa",
-    "hideNextMove": "Nascondi prossima mossa"
+    "hideNextMove": "Nascondi prossima mossa",
+    "suggestMove": "Suggerisci mossa",
+    "suggestMoveTitle": "Chiedi all'IA di suggerire una mossa (G)",
+    "suggesting": "Suggerendo...",
+    "loadAiModelFirst": "Carica prima un modello AI",
+    "initializingAiEngine": "Inizializzazione motore AI...",
+    "aiEngineInitializing": "Il motore AI si sta inizializzando, riprova",
+    "failedToGenerateMove": "Generazione mossa AI fallita"
   },
 
   "analysisBar": {

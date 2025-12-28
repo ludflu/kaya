@@ -422,7 +422,14 @@
     "enterEditMode": "进入编辑模式 (E)",
     "exitEditMode": "退出编辑模式 (E)",
     "showNextMove": "显示下一手",
-    "hideNextMove": "隐藏下一手"
+    "hideNextMove": "隐藏下一手",
+    "suggestMove": "建议落子",
+    "suggestMoveTitle": "让AI建议一手 (G)",
+    "suggesting": "建议中...",
+    "loadAiModelFirst": "请先加载AI模型",
+    "initializingAiEngine": "正在初始化AI引擎...",
+    "aiEngineInitializing": "AI引擎正在初始化，请重试",
+    "failedToGenerateMove": "AI建议落子失败"
   },
 
   "analysisBar": {

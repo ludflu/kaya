@@ -580,22 +580,22 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     setShowResignConfirm(false);
   }, []);
 
-  // Handler for AI move generation
-  const handleGenerateAIMove = useCallback(async () => {
+  // Handler for AI move suggestion (separate from analysis)
+  const handleSuggestMove = useCallback(async () => {
     if (!isModelLoaded) {
-      showToast('Please load an AI model first', 'error');
+      showToast(t('gameboardActions.loadAiModelFirst'), 'error');
       return;
     }
 
-    // Enable analysis mode if not already enabled (to initialize the engine)
-    if (!aiAnalysisMode) {
-      setAnalysisMode(true);
-      showToast('Initializing AI engine...', 'info');
-      return;
-    }
-
+    // If engine is not ready yet, we need to wait for it
+    // The engine should be initialized when a model is loaded
     if (!aiEngine) {
-      showToast('AI engine is initializing, please try again', 'info');
+      // If analysis mode is not enabled, enable it to initialize the engine
+      // and try again - the user will need to click again
+      if (!aiAnalysisMode) {
+        setAnalysisMode(true);
+      }
+      showToast(t('gameboardActions.aiEngineInitializing'), 'info');
       return;
     }
 
@@ -624,7 +624,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
       }
     } catch (error) {
       console.error('Failed to generate AI move:', error);
-      showToast('Failed to generate AI move', 'error');
+      showToast(t('gameboardActions.failedToGenerateMove'), 'error');
     } finally {
       setIsGeneratingMove(false);
     }
@@ -638,6 +638,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     gameInfo.komi,
     playMove,
     showToast,
+    t,
   ]);
 
   // Calculate score when in scoring mode
@@ -712,6 +713,12 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
         case 'a':
           toggleShowAnalysisBar();
           break;
+        case 'g':
+          // G for "Generate" AI move suggestion
+          if (isModelLoaded && !scoringMode && !editMode && !isGeneratingMove) {
+            handleSuggestMove();
+          }
+          break;
       }
     };
 
@@ -725,6 +732,11 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     toggleScoringMode,
     toggleShowAnalysisBar,
     currentBoard.signMap.length,
+    isModelLoaded,
+    scoringMode,
+    editMode,
+    isGeneratingMove,
+    handleSuggestMove,
   ]);
 
   const handleVertexRightClick = useCallback(
@@ -851,13 +863,17 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
         </button>
         {isModelLoaded && (
           <button
-            onClick={handleGenerateAIMove}
+            onClick={handleSuggestMove}
             disabled={isGeneratingMove || scoringMode || editMode}
-            className="gameboard-action-button gameboard-ai-move-button"
-            title="Generate AI move for current player"
+            className="gameboard-action-button gameboard-suggest-move-button"
+            title={t('gameboardActions.suggestMoveTitle')}
           >
             {isGeneratingMove ? <LuLoader size={16} className="spinner" /> : <LuBot size={16} />}
-            <span className="btn-text">{isGeneratingMove ? 'Generating...' : 'AI Move'}</span>
+            <span className="btn-text">
+              {isGeneratingMove
+                ? t('gameboardActions.suggesting')
+                : t('gameboardActions.suggestMove')}
+            </span>
           </button>
         )}
       </div>

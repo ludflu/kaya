@@ -422,7 +422,14 @@
     "enterEditMode": "Enter edit mode (E)",
     "exitEditMode": "Exit edit mode (E)",
     "showNextMove": "Show next move",
-    "hideNextMove": "Hide next move"
+    "hideNextMove": "Hide next move",
+    "suggestMove": "Suggest Move",
+    "suggestMoveTitle": "Ask AI to suggest a move (G)",
+    "suggesting": "Suggesting...",
+    "loadAiModelFirst": "Please load an AI model first",
+    "initializingAiEngine": "Initializing AI engine...",
+    "aiEngineInitializing": "AI engine is initializing, please try again",
+    "failedToGenerateMove": "Failed to generate AI move"
   },
 
   "analysisBar": {
