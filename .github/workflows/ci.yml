@@ -150,8 +150,27 @@ jobs:
             curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
           fi
 
-      - name: Build Desktop App
+      - name: Install Tauri system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apps/desktop/src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build Desktop Frontend
         run: bun run build:desktop
+
+      - name: Check Rust/Tauri compilation
+        run: cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
 
   # Job 4: E2E Tests
   e2e:
