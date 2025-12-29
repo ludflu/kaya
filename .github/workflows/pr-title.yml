@@ -1,0 +1,53 @@
+name: PR Title Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+
+jobs:
+  validate:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      # v6.1.1
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          # Configure which types are allowed (based on your AGENTS.md)
+          types: |
+            feat
+            fix
+            docs
+            refactor
+            perf
+            chore
+            test
+            style
+            build
+            ci
+            revert
+          # Require lowercase subject
+          subjectPattern: ^[a-z].+$
+          subjectPatternError: |
+            The subject "{subject}" must start with a lowercase letter.
+            Example: "feat: add new feature" (not "feat: Add new feature")
+          # Optional: require a scope
+          requireScope: false
+          # Optional: validate scopes if provided
+          scopes: |
+            ui
+            goboard
+            sgf
+            gametree
+            shudan
+            gtp
+            boardmatcher
+            deadstones
+            ai-engine
+            desktop
+            web
+            deps
