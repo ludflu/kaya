@@ -8,10 +8,12 @@
   "scripts": {
     "build": "tsc --build --force",
     "dev": "tsc --build --force --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/bun": "latest",
     "typescript": "^5.6.0"
   }
 }

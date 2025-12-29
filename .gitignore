@@ -10,6 +10,8 @@ bun.lockb
 # Testing
 coverage/
 *.lcov
+test-results/
+playwright-report/
 
 # Production
 dist/
