@@ -7,78 +7,11 @@ import {
   extractGameInfo as extractGameInfoFromSGF,
   vertexToSGF,
   type GameInfo,
-  type Vertex,
 } from '@kaya/sgf';
+import { getHandicapStones, type Vertex } from '@kaya/goboard';
 import { type SGFProperty, type NewGameConfig } from '../../types/game';
 import { validateTreeIntegrity } from '../../utils/treeValidation';
 import { clearAllCaches } from '../../utils/gameCache';
-
-/**
- * Get standard handicap stone positions for a given board size and handicap count.
- * Returns an array of vertices where handicap stones should be placed.
- *
- * Standard positions follow the traditional Go handicap placement rules:
- * - 2 stones: top-right, bottom-left corners
- * - 3 stones: add bottom-right corner
- * - 4 stones: all four corners
- * - 5 stones: four corners + center
- * - 6 stones: four corners + middle left and right
- * - 7 stones: four corners + middle left, right + center
- * - 8 stones: four corners + all four middle sides
- * - 9 stones: four corners + all four middle sides + center
- */
-function getHandicapStones(boardSize: number, handicap: number): Vertex[] {
-  if (handicap < 2 || handicap > 9) return [];
-
-  // Star point positions for different board sizes
-  let starPoints: { [key: string]: number };
-
-  if (boardSize === 19) {
-    starPoints = { corner: 3, middle: 9, edge: 9 };
-  } else if (boardSize === 13) {
-    starPoints = { corner: 3, middle: 6, edge: 6 };
-  } else if (boardSize === 9) {
-    starPoints = { corner: 2, middle: 4, edge: 4 };
-  } else {
-    // For non-standard board sizes, use formula: corner = 3 for boards >= 13, else 2
-    // middle is board center
-    const corner = boardSize >= 13 ? 3 : 2;
-    const middle = Math.floor(boardSize / 2);
-    starPoints = { corner, middle, edge: middle };
-  }
-
-  const c = starPoints.corner;
-  const m = starPoints.middle;
-  const e = starPoints.edge;
-
-  // Define the 9 standard positions
-  // Using 0-based indexing where [0,0] is top-left
-  const positions: Vertex[] = [
-    [boardSize - 1 - c, c], // 0: top-right (ne)
-    [c, boardSize - 1 - c], // 1: bottom-left (sw)
-    [boardSize - 1 - c, boardSize - 1 - c], // 2: bottom-right (se)
-    [c, c], // 3: top-left (nw)
-    [m, m], // 4: center
-    [c, e], // 5: middle-left (west)
-    [boardSize - 1 - c, e], // 6: middle-right (east)
-    [e, c], // 7: middle-top (north)
-    [e, boardSize - 1 - c], // 8: middle-bottom (south)
-  ];
-
-  // Return the appropriate number of stones based on handicap
-  const handicapPatterns: { [key: number]: number[] } = {
-    2: [0, 1],
-    3: [0, 1, 2],
-    4: [0, 1, 2, 3],
-    5: [0, 1, 2, 3, 4],
-    6: [0, 1, 2, 3, 5, 6],
-    7: [0, 1, 2, 3, 5, 6, 4],
-    8: [0, 1, 2, 3, 5, 6, 7, 8],
-    9: [0, 1, 2, 3, 5, 6, 7, 8, 4],
-  };
-
-  return handicapPatterns[handicap].map(idx => positions[idx]);
-}
 
 export function useGameTreeState() {
   const [gameTree, setGameTree] = useState<GameTree<SGFProperty> | null>(null);
@@ -397,7 +330,7 @@ export function useGameTreeState() {
       const boardSize = config.boardSize || 19;
       const handicapStones = getHandicapStones(boardSize, config.handicap);
       if (handicapStones.length > 0) {
-        rootData.AB = handicapStones.map(vertex => vertexToSGF(vertex));
+        rootData.AB = handicapStones.map((vertex: Vertex) => vertexToSGF(vertex));
       }
     }
 
