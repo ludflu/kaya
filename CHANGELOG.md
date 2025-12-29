@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.10] - 2025-12-29
+
+### <!-- 0 -->🚀 Features
+
+- Add macOS code signing and notarization ([c554c02](https://github.com/kaya-go/kaya/commit/c554c0283882075ec0b08216d1fdbaf62946a650))
+
+### <!-- 2 -->🚜 Refactor
+
+- *(ui)* Redesign analysis panel toolbar layout ([b048998](https://github.com/kaya-go/kaya/commit/b04899812ecb5583580916b7acca095ea1e1a715))
+
+### <!-- 3 -->📚 Documentation
+
+- Remove xattr workaround instructions now that dmg is signed ([f8c20aa](https://github.com/kaya-go/kaya/commit/f8c20aabe7b8f9f32066dacf67c58de4d49dd390))
+
+- Update issue template links in readme ([36c5c22](https://github.com/kaya-go/kaya/commit/36c5c22b429fc272c8bc31316404e78818947422))
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Add rpm to release artifacts and downloads table ([1b58a0d](https://github.com/kaya-go/kaya/commit/1b58a0d9119b22b438030147baa540a6695b35c6))
+
+- Add PR title validation for conventional commits ([464eefa](https://github.com/kaya-go/kaya/commit/464eefa66c2d2e152659b10928e37dc64caffffd))
+
 ## [0.1.9] - 2025-12-28
 
 ### <!-- 0 -->🚀 Features
@@ -18,6 +40,8 @@ All notable changes to this project will be documented in this file.
 
 - *(ui)* Lower status bar hide breakpoint from 1440px to 1024px ([6f1075b](https://github.com/kaya-go/kaya/commit/6f1075b893f953dc9e20529d298f526c2e5d9409))
 
+- *(desktop)* Strip html comments from changelog in updater ([de0fcd1](https://github.com/kaya-go/kaya/commit/de0fcd1a0f78bdeb90ef448cdc7100001ff76fe3))
+
 ### <!-- 2 -->🚜 Refactor
 
 - *(ui)* Separate AI engine lifecycle from analysis context ([663ee20](https://github.com/kaya-go/kaya/commit/663ee205842b6048b791b8b08d80bbbdb0b3447f))
@@ -27,6 +51,10 @@ All notable changes to this project will be documented in this file.
 ### <!-- 3 -->📚 Documentation
 
 - *(ui)* Add comments clarifying move generation vs analysis separation ([b0dc8ef](https://github.com/kaya-go/kaya/commit/b0dc8ef6a4d8686d197362c5e464accf055e4ed5))
+
+### <!-- 7 -->⚙️ Miscellaneous Tasks
+
+- Release v0.1.9 ([4a9bf86](https://github.com/kaya-go/kaya/commit/4a9bf865cdb0747ff03e9f1973d11f6384bce59e))
 
 ## [0.1.8] - 2025-12-28
 
