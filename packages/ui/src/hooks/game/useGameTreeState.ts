@@ -332,6 +332,8 @@ export function useGameTreeState() {
       if (handicapStones.length > 0) {
         rootData.AB = handicapStones.map((vertex: Vertex) => vertexToSGF(vertex));
       }
+      // White plays first after handicap stones are placed
+      rootData.PL = ['W'];
     }
 
     const newTree = new GameTree<SGFProperty>({
