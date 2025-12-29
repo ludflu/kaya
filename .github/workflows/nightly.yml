@@ -44,7 +44,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(node -p "require('./version.json').version")
+          VERSION=$(node -p "require('./package.json').version")
           SHORT_SHA=$(git rev-parse --short HEAD)
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
