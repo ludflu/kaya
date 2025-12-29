@@ -170,7 +170,7 @@ jobs:
         run: bun run build:desktop
 
       - name: Check Rust/Tauri compilation
-        run: cargo check --manifest-path apps/desktop/src-tauri/Cargo.toml
+        run: bun run tauri:check
 
   # Job 4: E2E Tests
   e2e:

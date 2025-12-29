@@ -44,6 +44,7 @@
     "build:packages": "bun run --filter @kaya/goboard build && bun run --filter @kaya/sgf build && bun run --filter @kaya/gametree build && bun run --filter @kaya/gtp build && bun run --filter @kaya/boardmatcher build && bun run --filter @kaya/deadstones build && bun run --filter @kaya/ai-engine build && bun run --filter @kaya/shudan build && bun run --filter @kaya/ui build",
     "tauri:dev": "bun --filter @kaya/desktop tauri dev",
     "tauri:build": "bun --filter @kaya/desktop tauri build",
+    "tauri:check": "bun --filter @kaya/desktop tauri:check",
     "generate-version-info": "bun run scripts/generate-version-info.ts",
     "copy-assets": "bun run scripts/copy-assets.ts",
     "generate-icons": "bun run scripts/generate-icons.ts",
