@@ -37,17 +37,4 @@ jobs:
             Example: "feat: add new feature" (not "feat: Add new feature")
           # Optional: require a scope
           requireScope: false
-          # Optional: validate scopes if provided
-          scopes: |
-            ui
-            goboard
-            sgf
-            gametree
-            shudan
-            gtp
-            boardmatcher
-            deadstones
-            ai-engine
-            desktop
-            web
-            deps
+
