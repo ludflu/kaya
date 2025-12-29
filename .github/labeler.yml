@@ -1,0 +1,63 @@
+# Labels to apply based on files changed in PRs
+# Used by labeler workflow
+
+'📱 app:desktop':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/desktop/**'
+
+'🌐 app:web':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/web/**'
+
+'📦 packages':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/**'
+
+'🎮 pkg:goboard':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/goboard/**'
+
+'🌳 pkg:gametree':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/gametree/**'
+
+'📄 pkg:sgf':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/sgf/**'
+
+'🤖 pkg:ai-engine':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/ai-engine/**'
+
+'🎨 pkg:ui':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/ui/**'
+
+'🦀 rust':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.rs'
+          - '**/Cargo.toml'
+          - '**/Cargo.lock'
+
+'⚙️ ci':
+  - changed-files:
+      - any-glob-to-any-file: '.github/**'
+
+'📚 documentation':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - '**/*.md'
+          - '!CHANGELOG.md'
+
+'🌍 i18n':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/ui/src/i18n/**'
+
+'🧪 tests':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/tests/**'
+          - '**/*.test.ts'
+          - '**/*.test.tsx'

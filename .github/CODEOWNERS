@@ -1,0 +1,30 @@
+# CODEOWNERS - Auto-assign reviewers for pull requests
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owner for everything
+* @hadim
+
+# Core game logic - critical paths
+/packages/goboard/ @hadim
+/packages/gametree/ @hadim
+/packages/sgf/ @hadim
+
+# AI and analysis
+/packages/ai-engine/ @hadim
+/packages/deadstones/ @hadim
+
+# UI components
+/packages/ui/ @hadim
+/packages/shudan/ @hadim
+
+# Apps
+/apps/desktop/ @hadim
+/apps/web/ @hadim
+
+# CI/CD and infrastructure
+/.github/ @hadim
+/scripts/ @hadim
+
+# Documentation
+/docs/ @hadim
+*.md @hadim
