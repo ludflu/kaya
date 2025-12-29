@@ -37,4 +37,3 @@ jobs:
             Example: "feat: add new feature" (not "feat: Add new feature")
           # Optional: require a scope
           requireScope: false
-
