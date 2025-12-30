@@ -23,6 +23,10 @@ public/assets/
 apps/web/public/assets/
 apps/desktop/public/assets/
 
+# WASM files (copied from node_modules by copy-assets script)
+apps/web/public/wasm/
+apps/desktop/public/wasm/
+
 # Misc
 .DS_Store
 *.pem
