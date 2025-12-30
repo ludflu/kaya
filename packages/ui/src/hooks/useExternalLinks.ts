@@ -37,9 +37,17 @@ export function useExternalLinks(): void {
       // Check if we're in Tauri environment
       if (typeof window !== 'undefined' && '__TAURI__' in window) {
         try {
-          // Dynamic import to avoid issues in web build
-          const { open } = await import('@tauri-apps/plugin-shell');
-          await open(href);
+          // Access Tauri internals directly to avoid dynamic import issues
+          const tauri = (
+            window as unknown as {
+              __TAURI__: { core: { invoke: (cmd: string, args: unknown) => Promise<unknown> } };
+            }
+          ).__TAURI__;
+          if (tauri?.core?.invoke) {
+            await tauri.core.invoke('plugin:shell|open', { path: href });
+          } else {
+            window.open(href, '_blank', 'noopener,noreferrer');
+          }
         } catch (error) {
           console.error('Failed to open external link with Tauri:', error);
           // Fallback to window.open

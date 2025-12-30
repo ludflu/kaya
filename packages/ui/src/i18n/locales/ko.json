@@ -467,6 +467,7 @@
 
   "quickNewGameTooltip": "빠른 새 대국 ({{size}}×{{size}}) - ⚠️ 저장하지 않고 현재 대국 삭제!",
   "close": "닫기",
+  "aboutKaya": "Kaya 정보",
   "aboutDescription": "KataGo 기반 AI 분석이 탑재된 아름다운 바둑 애플리케이션",
   "aboutVersion": "버전",
   "aboutCommit": "커밋",

@@ -109,6 +109,25 @@
   gap: 4px;
 }
 
+.status-bar-about-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.status-bar-about-button:hover {
+  color: var(--primary-color, #2196f3);
+  background-color: var(--hover-bg, rgba(33, 150, 243, 0.08));
+}
+
+.status-bar-about-button:active {
+  background-color: var(--active-bg, rgba(33, 150, 243, 0.15));
+  transform: scale(0.98);
+}
+
 .status-bar-date {
   color: var(--text-muted, #666);
 }

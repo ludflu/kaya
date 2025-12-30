@@ -467,6 +467,7 @@
 
   "quickNewGameTooltip": "クイック新規対局（{{size}}×{{size}}）- ⚠️ 保存せずに現在の対局を削除します！",
   "close": "閉じる",
+  "aboutKaya": "Kayaについて",
   "aboutDescription": "KataGoによるAI分析を搭載した美しい囲碁アプリケーション",
   "aboutVersion": "バージョン",
   "aboutCommit": "コミット",

@@ -468,6 +468,7 @@
   "quickNewGameTooltip": "Quick New Game ({{size}}×{{size}}) - ⚠️ Erases current game without saving!",
 
   "close": "Close",
+  "aboutKaya": "About Kaya",
   "aboutDescription": "A beautiful Go game application with AI analysis powered by KataGo",
   "aboutVersion": "Version",
   "aboutCommit": "Commit",

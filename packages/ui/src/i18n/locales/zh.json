@@ -467,6 +467,7 @@
 
   "quickNewGameTooltip": "快速新对局（{{size}}×{{size}}）- ⚠️ 未保存的对局将被删除！",
   "close": "关闭",
+  "aboutKaya": "关于 Kaya",
   "aboutDescription": "一款精美的围棋应用，搭载 KataGo AI 分析功能",
   "aboutVersion": "版本",
   "aboutCommit": "提交",

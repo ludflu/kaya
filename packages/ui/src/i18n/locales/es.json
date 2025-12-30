@@ -464,6 +464,7 @@
 
   "quickNewGameTooltip": "Nueva partida rápida ({{size}}×{{size}}) - ⚠️ ¡Elimina la partida actual sin guardar!",
   "close": "Cerrar",
+  "aboutKaya": "Acerca de Kaya",
   "aboutDescription": "Una hermosa aplicación de Go con análisis de IA impulsado por KataGo",
   "aboutVersion": "Versión",
   "aboutCommit": "Commit",

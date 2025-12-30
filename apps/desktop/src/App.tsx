@@ -396,6 +396,7 @@ function AppContent({
           moveUrl={moveUrl}
           patternMatchingEnabled={patternMatchingEnabled}
           onTogglePatternMatching={togglePatternMatching}
+          onShowAbout={() => setShowAboutDialog(true)}
         />
         <AboutDialog
           isOpen={showAboutDialog}

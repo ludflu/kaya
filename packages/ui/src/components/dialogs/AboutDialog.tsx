@@ -32,8 +32,13 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ isOpen, onClose, versi
       month: 'long',
       day: 'numeric',
     });
-    versionUrl = `${GITHUB_REPO_URL}/releases/tag/v${version}`;
     commitUrl = `${GITHUB_REPO_URL}/commit/${gitHash}`;
+    // For dev versions, link to the commit instead of a release that doesn't exist
+    if (version.includes('-dev') || version.includes('-')) {
+      versionUrl = commitUrl;
+    } else {
+      versionUrl = `${GITHUB_REPO_URL}/releases/tag/v${version}`;
+    }
   }
 
   return (

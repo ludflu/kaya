@@ -15,6 +15,7 @@ interface StatusBarProps {
   moveUrl?: string | null;
   patternMatchingEnabled?: boolean;
   onTogglePatternMatching?: () => void;
+  onShowAbout?: () => void;
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({
@@ -23,6 +24,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   moveUrl,
   patternMatchingEnabled = true,
   onTogglePatternMatching,
+  onShowAbout,
 }) => {
   const { t } = useTranslation();
 
@@ -86,29 +88,17 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       {/* Right side - Version info */}
       <div className="status-bar-section status-bar-right">
         {versionData ? (
-          <span className="status-bar-version">
-            <a
-              href={versionUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="status-bar-link"
-              title={t('viewVersion')}
-            >
-              v{version}
-            </a>
+          <button
+            className="status-bar-version status-bar-about-button"
+            onClick={onShowAbout}
+            title={t('aboutKaya')}
+          >
+            <span>v{version}</span>
             {' • '}
-            <a
-              href={commitUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="status-bar-link"
-              title={t('viewCommit')}
-            >
-              {gitHash}
-            </a>
+            <span>{gitHash}</span>
             {' • '}
             <span className="status-bar-date">{buildDateFormatted}</span>
-          </span>
+          </button>
         ) : (
           <span className="status-bar-text status-bar-empty">—</span>
         )}

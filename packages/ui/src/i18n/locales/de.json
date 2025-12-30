@@ -464,6 +464,7 @@
 
   "quickNewGameTooltip": "Schnelles neues Spiel ({{size}}×{{size}}) - ⚠️ Löscht aktuelles Spiel ohne Speichern!",
   "close": "Schließen",
+  "aboutKaya": "Über Kaya",
   "aboutDescription": "Eine schöne Go-Anwendung mit KI-Analyse durch KataGo",
   "aboutVersion": "Version",
   "aboutCommit": "Commit",

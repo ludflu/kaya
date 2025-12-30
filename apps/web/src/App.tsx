@@ -34,6 +34,7 @@ import {
   useLayoutMode, // Added import
   type MobileTab,
   LandingPage,
+  AboutDialog,
 } from '@kaya/ui';
 
 function WebUpdater({ currentVersion }: { currentVersion: VersionData | undefined }) {
@@ -228,6 +229,9 @@ function AppContent({
   // Game info editor state for header actions
   const { isEditMode: gameInfoEditMode, toggleEditMode: toggleGameInfoEditMode } =
     useGameInfoEditMode();
+
+  // About dialog state
+  const [showAboutDialog, setShowAboutDialog] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -476,6 +480,12 @@ function AppContent({
           moveUrl={moveUrl}
           patternMatchingEnabled={patternMatchingEnabled}
           onTogglePatternMatching={togglePatternMatching}
+          onShowAbout={() => setShowAboutDialog(true)}
+        />
+        <AboutDialog
+          isOpen={showAboutDialog}
+          onClose={() => setShowAboutDialog(false)}
+          versionData={versionData}
         />
       </div>
     </AppDropZone>
