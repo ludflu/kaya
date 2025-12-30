@@ -66,6 +66,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
   const [showWinRate, setShowWinRate] = useState(true);
   const [showScoreLead, setShowScoreLead] = useState(true);
   const [showMoveStrengthInfo, setShowMoveStrengthInfo] = useState(false);
+  const [showMoveLossTable, setShowMoveLossTable] = useState(false);
 
   const handleToggleWinRate = useCallback(() => {
     setShowWinRate(prev => !prev);
@@ -81,9 +82,16 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     totalPositions: number;
     currentPositionIndex: number;
     analyzedCount: number;
+    fullPath: Array<{ id: number | string; data: any }>;
   } => {
     if (!gameTree || rootId === null || rootId === undefined || currentNodeId === null) {
-      return { dataPoints: [], totalPositions: 0, currentPositionIndex: 0, analyzedCount: 0 };
+      return {
+        dataPoints: [],
+        totalPositions: 0,
+        currentPositionIndex: 0,
+        analyzedCount: 0,
+        fullPath: [],
+      };
     }
 
     const boardSize = gameInfo.boardSize ?? 19;
@@ -104,7 +112,13 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     }
 
     if (fullPath.length === 0)
-      return { dataPoints: [], totalPositions: 0, currentPositionIndex: 0, analyzedCount: 0 };
+      return {
+        dataPoints: [],
+        totalPositions: 0,
+        currentPositionIndex: 0,
+        analyzedCount: 0,
+        fullPath: [],
+      };
 
     // First pass: compute all cache keys and collect raw results
     const cacheKeys: string[] = [];
@@ -155,10 +169,69 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       totalPositions: fullPath.length,
       currentPositionIndex,
       analyzedCount,
+      fullPath,
     };
   }, [gameTree, rootId, currentNodeId, gameInfo, analysisCache, analysisCacheSize]);
 
-  const { dataPoints, totalPositions, currentPositionIndex, analyzedCount } = analysisData;
+  const { dataPoints, totalPositions, currentPositionIndex, analyzedCount, fullPath } =
+    analysisData;
+
+  // Calculate top 10 moves by point loss
+  const topMoveLosses = useMemo(() => {
+    if (dataPoints.length < 2 || fullPath.length === 0) return [];
+
+    interface MoveLoss {
+      moveNumber: number;
+      nodeId: number | string;
+      player: 'B' | 'W';
+      pointLoss: number;
+      scoreBefore: number;
+      scoreAfter: number;
+    }
+
+    const losses: MoveLoss[] = [];
+
+    for (let i = 1; i < dataPoints.length; i++) {
+      const current = dataPoints[i];
+      const previous = dataPoints[i - 1];
+
+      // Find the corresponding node in fullPath to determine the player
+      const node = fullPath.find(n => n.id === current.nodeId);
+      if (!node) continue;
+
+      // Check node data for B (Black) or W (White) move
+      const hasBlackMove = node.data.B && Array.isArray(node.data.B) && node.data.B.length > 0;
+      const hasWhiteMove = node.data.W && Array.isArray(node.data.W) && node.data.W.length > 0;
+
+      // Skip if no move (root or setup positions)
+      if (!hasBlackMove && !hasWhiteMove) continue;
+
+      const player = hasBlackMove ? 'B' : 'W';
+
+      // Calculate point loss for the player who made the move
+      // scoreLead is always from Black's perspective (positive = Black ahead)
+      // For Black: if scoreLead decreases, Black lost points
+      // For White: if scoreLead increases, White lost points (position got worse for White)
+      const pointLoss = hasBlackMove
+        ? previous.scoreLead - current.scoreLead
+        : current.scoreLead - previous.scoreLead;
+
+      // Only include moves where points were actually lost (positive loss)
+      if (pointLoss > 0) {
+        losses.push({
+          moveNumber: current.moveNumber,
+          nodeId: current.nodeId,
+          player,
+          pointLoss,
+          scoreBefore: previous.scoreLead,
+          scoreAfter: current.scoreLead,
+        });
+      }
+    }
+
+    // Sort by point loss (descending) and take top 10
+    return losses.sort((a, b) => b.pointLoss - a.pointLoss).slice(0, 10);
+  }, [dataPoints, fullPath]);
 
   const handleNavigate = useCallback(
     (nodeId: number | string) => {
@@ -291,6 +364,16 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
           <span className="legend-indicator legend-score" />
           <span className="legend-label">{t('analysis.score')}</span>
         </button>
+        <button
+          className={`analysis-legend-toggle ${showMoveLossTable ? 'active' : ''}`}
+          onClick={() => setShowMoveLossTable(prev => !prev)}
+          title="Show top moves by point loss"
+          aria-label="Toggle move loss table"
+          aria-pressed={showMoveLossTable}
+          disabled={topMoveLosses.length === 0}
+        >
+          <span className="legend-label">Top Losses</span>
+        </button>
       </div>
 
       {(isInitializing || isAnalyzing) && (
@@ -334,6 +417,50 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         onToggleWinRate={handleToggleWinRate}
         onToggleScoreLead={handleToggleScoreLead}
       />
+
+      {/* Move loss table */}
+      {showMoveLossTable && topMoveLosses.length > 0 && (
+        <div className="move-loss-table-container">
+          <table className="move-loss-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Move</th>
+                <th>Player</th>
+                <th>Point Loss</th>
+                <th>Score Before</th>
+                <th>Score After</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topMoveLosses.map((loss, index) => (
+                <tr
+                  key={loss.nodeId}
+                  onClick={() => handleNavigate(loss.nodeId)}
+                  className="move-loss-row"
+                >
+                  <td>{index + 1}</td>
+                  <td>{loss.moveNumber}</td>
+                  <td>
+                    <span className={`player-indicator player-${loss.player.toLowerCase()}`}>
+                      {loss.player}
+                    </span>
+                  </td>
+                  <td className="point-loss-value">{loss.pointLoss.toFixed(1)}</td>
+                  <td>
+                    {loss.scoreBefore > 0 ? '+' : ''}
+                    {loss.scoreBefore.toFixed(1)}
+                  </td>
+                  <td>
+                    {loss.scoreAfter > 0 ? '+' : ''}
+                    {loss.scoreAfter.toFixed(1)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <AnalysisLegendModal
         isOpen={showMoveStrengthInfo}
