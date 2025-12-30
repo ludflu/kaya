@@ -34,8 +34,10 @@ import {
   useExternalLinks,
   useLayoutMode,
   LandingPage,
+  AboutDialog,
   type MobileTab,
 } from '@kaya/ui';
+import { listen } from '@tauri-apps/api/event';
 import { analytics } from './analytics';
 import { Updater } from './Updater';
 
@@ -50,6 +52,20 @@ function AppContent({
 }) {
   // Enable external links to open in default browser
   useExternalLinks();
+
+  // About dialog state
+  const [showAboutDialog, setShowAboutDialog] = useState(false);
+
+  // Listen for menu event to show about dialog
+  useEffect(() => {
+    const unlisten = listen('show-about', () => {
+      setShowAboutDialog(true);
+    });
+
+    return () => {
+      unlisten.then(u => u());
+    };
+  }, []);
 
   // Library panel state
   const { showLibrary, setShowLibrary, toggleLibrary } = useLibraryPanel();
@@ -380,6 +396,11 @@ function AppContent({
           moveUrl={moveUrl}
           patternMatchingEnabled={patternMatchingEnabled}
           onTogglePatternMatching={togglePatternMatching}
+        />
+        <AboutDialog
+          isOpen={showAboutDialog}
+          onClose={() => setShowAboutDialog(false)}
+          versionData={versionData}
         />
       </div>
     </AppDropZone>

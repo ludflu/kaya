@@ -465,5 +465,15 @@
     "showSidebar": "Show Sidebar (Ctrl+B)"
   },
 
-  "quickNewGameTooltip": "Quick New Game ({{size}}×{{size}}) - ⚠️ Erases current game without saving!"
+  "quickNewGameTooltip": "Quick New Game ({{size}}×{{size}}) - ⚠️ Erases current game without saving!",
+
+  "close": "Close",
+  "aboutDescription": "A beautiful Go game application with AI analysis powered by KataGo",
+  "aboutVersion": "Version",
+  "aboutCommit": "Commit",
+  "aboutBuildDate": "Build Date",
+  "aboutLicense": "License",
+  "aboutGitHub": "GitHub Repository",
+  "aboutReportIssue": "Report an Issue",
+  "aboutVersionNotAvailable": "Version information not available"
 }

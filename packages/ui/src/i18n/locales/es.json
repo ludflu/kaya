@@ -462,5 +462,14 @@
     "showSidebar": "Mostrar barra lateral (Ctrl+B)"
   },
 
-  "quickNewGameTooltip": "Nueva partida rápida ({{size}}×{{size}}) - ⚠️ ¡Elimina la partida actual sin guardar!"
+  "quickNewGameTooltip": "Nueva partida rápida ({{size}}×{{size}}) - ⚠️ ¡Elimina la partida actual sin guardar!",
+  "close": "Cerrar",
+  "aboutDescription": "Una hermosa aplicación de Go con análisis de IA impulsado por KataGo",
+  "aboutVersion": "Versión",
+  "aboutCommit": "Commit",
+  "aboutBuildDate": "Fecha de compilación",
+  "aboutLicense": "Licencia",
+  "aboutGitHub": "Repositorio de GitHub",
+  "aboutReportIssue": "Reportar un problema",
+  "aboutVersionNotAvailable": "Información de versión no disponible"
 }

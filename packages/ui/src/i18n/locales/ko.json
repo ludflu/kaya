@@ -465,5 +465,14 @@
     "showSidebar": "사이드바 표시 (Ctrl+B)"
   },
 
-  "quickNewGameTooltip": "빠른 새 대국 ({{size}}×{{size}}) - ⚠️ 저장하지 않고 현재 대국 삭제!"
+  "quickNewGameTooltip": "빠른 새 대국 ({{size}}×{{size}}) - ⚠️ 저장하지 않고 현재 대국 삭제!",
+  "close": "닫기",
+  "aboutDescription": "KataGo 기반 AI 분석이 탑재된 아름다운 바둑 애플리케이션",
+  "aboutVersion": "버전",
+  "aboutCommit": "커밋",
+  "aboutBuildDate": "빌드 날짜",
+  "aboutLicense": "라이선스",
+  "aboutGitHub": "GitHub 저장소",
+  "aboutReportIssue": "문제 신고",
+  "aboutVersionNotAvailable": "버전 정보를 사용할 수 없습니다"
 }

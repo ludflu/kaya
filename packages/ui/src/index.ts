@@ -70,6 +70,7 @@ export {
 export { NewGameDialog } from './components/dialogs/NewGameDialog';
 export { SaveFileDialog } from './components/dialogs/SaveFileDialog';
 export { SaveToLibraryDialog } from './components/dialogs/SaveToLibraryDialog';
+export { AboutDialog } from './components/dialogs/AboutDialog';
 export {
   CommentEditor,
   CommentHeaderActions,

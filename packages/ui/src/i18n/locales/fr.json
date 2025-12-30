@@ -462,5 +462,14 @@
     "showSidebar": "Afficher le panneau latéral (Ctrl+B)"
   },
 
-  "quickNewGameTooltip": "Partie rapide ({{size}}×{{size}}) - ⚠️ Efface la partie sans sauvegarder !"
+  "quickNewGameTooltip": "Partie rapide ({{size}}×{{size}}) - ⚠️ Efface la partie sans sauvegarder !",
+  "close": "Fermer",
+  "aboutDescription": "Une belle application de Go avec analyse IA propulsée par KataGo",
+  "aboutVersion": "Version",
+  "aboutCommit": "Commit",
+  "aboutBuildDate": "Date de compilation",
+  "aboutLicense": "Licence",
+  "aboutGitHub": "Dépôt GitHub",
+  "aboutReportIssue": "Signaler un problème",
+  "aboutVersionNotAvailable": "Informations de version non disponibles"
 }

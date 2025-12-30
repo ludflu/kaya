@@ -462,5 +462,14 @@
     "showSidebar": "Seitenleiste anzeigen (Strg+B)"
   },
 
-  "quickNewGameTooltip": "Schnelles neues Spiel ({{size}}×{{size}}) - ⚠️ Löscht aktuelles Spiel ohne Speichern!"
+  "quickNewGameTooltip": "Schnelles neues Spiel ({{size}}×{{size}}) - ⚠️ Löscht aktuelles Spiel ohne Speichern!",
+  "close": "Schließen",
+  "aboutDescription": "Eine schöne Go-Anwendung mit KI-Analyse durch KataGo",
+  "aboutVersion": "Version",
+  "aboutCommit": "Commit",
+  "aboutBuildDate": "Erstellungsdatum",
+  "aboutLicense": "Lizenz",
+  "aboutGitHub": "GitHub-Repository",
+  "aboutReportIssue": "Problem melden",
+  "aboutVersionNotAvailable": "Versionsinformationen nicht verfügbar"
 }
