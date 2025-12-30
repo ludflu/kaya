@@ -9,7 +9,7 @@
 ## Agent Behavior Rules
 
 1. **Compilation Testing** - Use `bun run type-check` or `bun run build:packages` to verify changes.
-2. **Git Commits** - **NEVER** commit changes automatically unless explicitly asked.
+2. **Git Commits** - **NEVER** commit changes automatically unless explicitly asked. When the user asks to commit, it applies **only to the work completed so far**, not to any future tasks in the conversation.
 3. **Responsive Design** - All new UI components, layouts, and UX patterns **must** be adapted for:
    - Desktop screens
    - Mobile and tablet screens (portrait orientation)
