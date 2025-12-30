@@ -258,12 +258,17 @@ function parseGTPVertex(coord: string, boardSize: number): Vertex | null {
   return [x, y];
 }
 
+// Type for pending analysis action
+type PendingAnalysisAction = 'analysisBar' | 'ownership' | 'topMoves' | null;
+
 export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
   // Legacy model state (for backward compatibility with AIAnalysisOverlay)
   const [customAIModel, setCustomAIModel] = useState<AIModel | null>(null);
   const [isModelLoaded, setIsModelLoaded] = useState(false);
   const [isAIConfigOpen, setAIConfigOpen] = useState(false);
   const [analysisMode, setAnalysisMode] = useState(false);
+  // Track pending analysis action to trigger after model download
+  const [pendingAnalysisAction, setPendingAnalysisAction] = useState<PendingAnalysisAction>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResultState, setAnalysisResultState] = useState<any | null>(null);
   const [aiSettings, setAISettingsState] = useState<AISettings>(loadAISettings);
@@ -677,7 +682,42 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
     []
   );
 
+  // Check if any model is downloaded
+  const hasAnyDownloadedModel = useMemo(
+    () => modelLibrary.some(m => m.isDownloaded),
+    [modelLibrary]
+  );
+
+  // Effect to trigger pending analysis action after a model is downloaded
+  useEffect(() => {
+    if (hasAnyDownloadedModel && pendingAnalysisAction) {
+      // A model was downloaded and we have a pending action
+      const action = pendingAnalysisAction;
+      setPendingAnalysisAction(null);
+
+      // Execute the pending action
+      if (action === 'analysisBar') {
+        setShowAnalysisBar(true);
+        setShowTopMoves(true);
+        setAnalysisMode(true);
+      } else if (action === 'ownership') {
+        setShowOwnership(true);
+        setAnalysisMode(true);
+      } else if (action === 'topMoves') {
+        setShowTopMoves(true);
+        setAnalysisMode(true);
+      }
+    }
+  }, [hasAnyDownloadedModel, pendingAnalysisAction]);
+
   const toggleOwnership = useCallback(() => {
+    // If trying to enable but no model is downloaded, open config dialog instead
+    if (!showOwnership && !hasAnyDownloadedModel) {
+      setPendingAnalysisAction('ownership');
+      setAIConfigOpen(true);
+      return;
+    }
+
     setShowOwnership(prev => {
       const newValue = !prev;
       // When enabling ownership view, also enable analysis mode to start the engine
@@ -691,9 +731,25 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
       }
       return newValue;
     });
-  }, [analysisMode, setAnalysisMode, showTopMoves, showAnalysisBar, checkShouldDisableAnalysis]);
+  }, [
+    analysisMode,
+    setAnalysisMode,
+    showTopMoves,
+    showAnalysisBar,
+    showOwnership,
+    hasAnyDownloadedModel,
+    setAIConfigOpen,
+    checkShouldDisableAnalysis,
+  ]);
 
   const toggleTopMoves = useCallback(() => {
+    // If trying to enable but no model is downloaded, open config dialog instead
+    if (!showTopMoves && !hasAnyDownloadedModel) {
+      setPendingAnalysisAction('topMoves');
+      setAIConfigOpen(true);
+      return;
+    }
+
     setShowTopMoves(prev => {
       const newValue = !prev;
       // When enabling top moves view, also enable analysis mode to start the engine
@@ -707,9 +763,25 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
       }
       return newValue;
     });
-  }, [analysisMode, setAnalysisMode, showOwnership, showAnalysisBar, checkShouldDisableAnalysis]);
+  }, [
+    analysisMode,
+    setAnalysisMode,
+    showOwnership,
+    showAnalysisBar,
+    showTopMoves,
+    hasAnyDownloadedModel,
+    setAIConfigOpen,
+    checkShouldDisableAnalysis,
+  ]);
 
   const toggleShowAnalysisBar = useCallback(() => {
+    // If trying to enable but no model is downloaded, open config dialog instead
+    if (!showAnalysisBar && !hasAnyDownloadedModel) {
+      setPendingAnalysisAction('analysisBar');
+      setAIConfigOpen(true);
+      return;
+    }
+
     setShowAnalysisBar(prev => {
       const newValue = !prev;
       // Sync showTopMoves with showAnalysisBar:
@@ -731,7 +803,15 @@ export function useAIAnalysis({ currentBoard }: UseAIAnalysisProps) {
       }
       return newValue;
     });
-  }, [analysisMode, setAnalysisMode, showOwnership, checkShouldDisableAnalysis]);
+  }, [
+    analysisMode,
+    setAnalysisMode,
+    showOwnership,
+    showAnalysisBar,
+    hasAnyDownloadedModel,
+    setAIConfigOpen,
+    checkShouldDisableAnalysis,
+  ]);
 
   const winRate = useMemo(() => analysisResult?.winRate ?? null, [analysisResult]);
   const scoreLead = useMemo(() => analysisResult?.scoreLead ?? null, [analysisResult]);
