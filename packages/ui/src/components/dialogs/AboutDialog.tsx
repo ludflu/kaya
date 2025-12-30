@@ -44,7 +44,7 @@ export const AboutDialog: React.FC<AboutDialogProps> = ({ isOpen, onClose, versi
         </button>
 
         <div className="about-header">
-          <img src="/assets/icon.png" alt="Kaya" className="about-logo" />
+          <img src="/icon.png" alt="Kaya" className="about-logo" />
           <h1 className="about-title">Kaya</h1>
         </div>
 
