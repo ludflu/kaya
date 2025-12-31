@@ -621,6 +621,7 @@ export const Goban: React.FC<GobanProps> = ({
   onVertexClick,
   onVertexMouseUp,
   onVertexMouseDown,
+  onVertexMouseMove,
   onVertexRightClick,
   // Touch event handlers
   onVertexTouchStart,
@@ -849,12 +850,16 @@ export const Goban: React.FC<GobanProps> = ({
         const y = parseInt(vertex.getAttribute('data-y') || '');
         if (!isNaN(x) && !isNaN(y)) {
           updateGhostPosition([x, y]);
+          // Call onVertexMouseMove for drag operations (e.g., painting markers)
+          if (onVertexMouseMove) {
+            onVertexMouseMove(evt, [x, y]);
+          }
         }
       } else {
         updateGhostPosition(null);
       }
     },
-    [updateGhostPosition]
+    [updateGhostPosition, onVertexMouseMove]
   );
 
   // Memoize the throttled handler to prevent recreation on every render

@@ -149,13 +149,16 @@ export interface GobanProps {
   onVertexClick?: (evt: React.MouseEvent, vertex: Vertex) => void;
 
   /** Called when mouse button is released on a vertex */
-  onVertexMouseUp?: (evt: MouseEvent, vertex: Vertex) => void;
+  onVertexMouseUp?: (evt: React.MouseEvent, vertex: Vertex) => void;
 
   /** Called when mouse button is pressed on a vertex */
-  onVertexMouseDown?: (evt: MouseEvent, vertex: Vertex) => void;
+  onVertexMouseDown?: (evt: React.MouseEvent, vertex: Vertex) => void;
+
+  /** Called when mouse moves over a vertex (for drag operations) */
+  onVertexMouseMove?: (evt: React.MouseEvent, vertex: Vertex) => void;
 
   /** Called when a vertex is right-clicked (context menu) */
-  onVertexRightClick?: (evt: MouseEvent, vertex: Vertex) => void;
+  onVertexRightClick?: (evt: React.MouseEvent, vertex: Vertex) => void;
 
   // =========================
   // Touch Event Handlers

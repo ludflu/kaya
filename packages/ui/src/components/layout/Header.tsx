@@ -476,21 +476,19 @@ export const Header: React.FC<HeaderProps> = ({
         makeMainVariation();
       }
 
-      // Ctrl+Z or Cmd+Z - Undo (only in edit mode)
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey && editMode) {
+      // Ctrl+Z or Cmd+Z - Undo (always available)
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey) {
         e.preventDefault();
         if (canUndo) undo();
       }
 
-      // Ctrl+Shift+Z or Cmd+Shift+Z or Ctrl+Y - Redo (only in edit mode)
+      // Ctrl+Shift+Z or Cmd+Shift+Z or Ctrl+Y - Redo (always available)
       if (
         ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && e.shiftKey) ||
         ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y')
       ) {
-        if (editMode) {
-          e.preventDefault();
-          if (canRedo) redo();
-        }
+        e.preventDefault();
+        if (canRedo) redo();
       }
 
       if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
@@ -519,7 +517,6 @@ export const Header: React.FC<HeaderProps> = ({
     redo,
     canUndo,
     canRedo,
-    editMode,
   ]);
 
   return (
