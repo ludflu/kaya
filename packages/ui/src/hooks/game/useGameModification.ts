@@ -219,6 +219,21 @@ export function useGameModification({
             return;
         }
 
+        // Remove any existing markers at this coordinate from OTHER marker types
+        // This ensures replacing a square with a triangle removes the square first
+        const otherMarkerProps = ['TR', 'SQ', 'CR', 'MA', 'LB'].filter(p => p !== property);
+        for (const prop of otherMarkerProps) {
+          if (node.data[prop]) {
+            const filtered = (node.data[prop] as string[]).filter(v => {
+              if (prop === 'LB') return !v.startsWith(`${sgfCoord}:`);
+              return v !== sgfCoord;
+            });
+            if (filtered.length !== (node.data[prop] as string[]).length) {
+              draft.updateProperty(currentNodeId, prop, filtered);
+            }
+          }
+        }
+
         const existingMarkers = node.data[property] || [];
         // Check if marker already exists at this coordinate
         const exists = existingMarkers.some(v => {

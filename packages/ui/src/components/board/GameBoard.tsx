@@ -165,6 +165,13 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
   // Start with white (-1) so first placement is black (1)
   const [lastPlacedColor, setLastPlacedColor] = useState<Sign>(-1);
 
+  // Track dragging state for marker tools (drag to paint multiple markers)
+  const [isDraggingMarker, setIsDraggingMarker] = useState(false);
+  // Track visited vertices during drag to avoid re-processing the same vertex
+  const draggedVerticesRef = useRef<Set<string>>(new Set());
+  // Track if we handled marker in mousedown to prevent double-processing in click
+  const handledInMouseDownRef = useRef(false);
+
   // Track board dimensions separately to detect changes
   const boardHeight = currentBoard.signMap.length;
   const boardWidth = currentBoard.signMap[0]?.length ?? boardHeight;
@@ -275,6 +282,31 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     }
   }, [editMode, editTool, scoringMode]);
 
+  // Helper function to place/toggle a marker at a vertex
+  // For marker tools (triangle, square, circle, cross): toggle if same marker exists
+  // If different marker exists, replace it with the new one (handled by addMarker)
+  // For labels: always add (they auto-increment)
+  const placeOrToggleMarker = useCallback(
+    (vertex: Vertex, tool: string) => {
+      const [x, y] = vertex;
+      const existingMarker = markerMap?.[y]?.[x];
+
+      // Check if it's a shape marker tool
+      const isShapeMarker =
+        tool === 'triangle' || tool === 'square' || tool === 'circle' || tool === 'cross';
+
+      if (isShapeMarker && existingMarker?.type === tool) {
+        // Same marker type exists: remove it (toggle off)
+        removeMarker(vertex);
+      } else {
+        // Different marker or no marker: add the new marker
+        // addMarker will automatically remove any existing marker of a different type
+        addMarker(vertex, tool);
+      }
+    },
+    [markerMap, addMarker, removeMarker]
+  );
+
   // Set up action handler for navigation mode
   useEffect(() => {
     if (navigationMode) {
@@ -323,7 +355,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
             case 'square':
             case 'circle':
             case 'cross':
-              addMarker(vertex, editTool);
+              placeOrToggleMarker(vertex, editTool);
               break;
             case 'label-alpha':
             case 'label-num':
@@ -385,6 +417,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     addMarker,
     removeMarker,
     setLastPlacedColor,
+    placeOrToggleMarker,
   ]);
 
   // Get last move from current node
@@ -526,14 +559,22 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
           case 'square':
           case 'circle':
           case 'cross':
-            addMarker(vertex, editTool);
+            // Skip if already handled in mousedown (for drag-to-paint)
+            if (!handledInMouseDownRef.current) {
+              placeOrToggleMarker(vertex, editTool);
+            }
+            handledInMouseDownRef.current = false;
             break;
           case 'label-alpha':
           case 'label-num':
             addMarker(vertex, editTool);
             break;
           case 'erase-marker':
-            removeMarker(vertex);
+            // Skip if already handled in mousedown (for drag-to-erase)
+            if (!handledInMouseDownRef.current) {
+              removeMarker(vertex);
+            }
+            handledInMouseDownRef.current = false;
             break;
         }
         return;
@@ -587,6 +628,7 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
       removeMarker,
       lastPlacedColor,
       setLastPlacedColor,
+      placeOrToggleMarker,
     ]
   );
 
@@ -788,6 +830,81 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
     isGeneratingMove,
     handleSuggestMove,
   ]);
+
+  // Check if current tool is a draggable marker tool
+  const isMarkerTool = useCallback((tool: string) => {
+    return (
+      tool === 'triangle' ||
+      tool === 'square' ||
+      tool === 'circle' ||
+      tool === 'cross' ||
+      tool === 'erase-marker'
+    );
+  }, []);
+
+  // Handle mouse down for drag-to-paint markers
+  const handleVertexMouseDown = useCallback(
+    (evt: React.MouseEvent, vertex: Vertex) => {
+      // Only enable drag-to-paint for marker tools in edit mode
+      if (!editMode || !isMarkerTool(editTool)) return;
+
+      // Mark that we're handling this in mousedown to prevent double-processing in click
+      handledInMouseDownRef.current = true;
+
+      // Start dragging
+      setIsDraggingMarker(true);
+      draggedVerticesRef.current.clear();
+
+      // Place/toggle marker at the initial vertex
+      const key = `${vertex[0]},${vertex[1]}`;
+      draggedVerticesRef.current.add(key);
+
+      if (editTool === 'erase-marker') {
+        removeMarker(vertex);
+      } else {
+        placeOrToggleMarker(vertex, editTool);
+      }
+    },
+    [editMode, editTool, isMarkerTool, placeOrToggleMarker, removeMarker]
+  );
+
+  // Handle mouse move for drag-to-paint markers
+  const handleVertexMouseMove = useCallback(
+    (evt: React.MouseEvent, vertex: Vertex) => {
+      // Only process if we're dragging and have a marker tool
+      if (!isDraggingMarker || !editMode || !isMarkerTool(editTool)) return;
+
+      const key = `${vertex[0]},${vertex[1]}`;
+
+      // Skip if we've already processed this vertex in this drag operation
+      if (draggedVerticesRef.current.has(key)) return;
+
+      draggedVerticesRef.current.add(key);
+
+      if (editTool === 'erase-marker') {
+        removeMarker(vertex);
+      } else {
+        // During drag, also use toggle logic so dragging over existing markers removes them
+        placeOrToggleMarker(vertex, editTool);
+      }
+    },
+    [isDraggingMarker, editMode, editTool, isMarkerTool, placeOrToggleMarker, removeMarker]
+  );
+
+  // Handle mouse up to end drag (global listener)
+  useEffect(() => {
+    const handleMouseUp = () => {
+      if (isDraggingMarker) {
+        setIsDraggingMarker(false);
+        draggedVerticesRef.current.clear();
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingMarker]);
 
   const handleVertexRightClick = useCallback(
     (evt: React.MouseEvent, vertex: Vertex) => {
@@ -1088,6 +1205,8 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
             nextMovePlayer={nextMovePlayer}
             currentPlayer={ghostStonePlayer}
             onVertexClick={handleVertexClick}
+            onVertexMouseDown={handleVertexMouseDown}
+            onVertexMouseMove={handleVertexMouseMove}
             dimmedVertices={dimmedVertices}
             paintMap={territoryMap}
             markerMap={markerMap ?? undefined}
