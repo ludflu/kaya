@@ -845,6 +845,8 @@ export const GameBoard: React.FC<GameBoardProps> = memo(({ onScoreData }) => {
   // Handle mouse down for drag-to-paint markers
   const handleVertexMouseDown = useCallback(
     (evt: React.MouseEvent, vertex: Vertex) => {
+      // Only handle left mouse button (button 0) - ignore right-click (button 2) and middle-click (button 1)
+      if (evt.button !== 0) return;
       // Only enable drag-to-paint for marker tools in edit mode
       if (!editMode || !isMarkerTool(editTool)) return;
 
