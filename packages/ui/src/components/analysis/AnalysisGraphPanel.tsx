@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   LuMap,
@@ -9,8 +9,10 @@ import {
   LuLayers,
   LuLoader,
   LuBrain,
+  LuPlay,
 } from 'react-icons/lu';
 import { useGameTree } from '../../contexts/GameTreeContext';
+import { useAIEngine } from '../../contexts/AIEngineContext';
 import { AnalysisLegendModal } from './AnalysisLegendModal';
 import {
   createInitialAnalysisState,
@@ -21,6 +23,7 @@ import {
 import { getPathToNode } from '../../utils/gameCache';
 import { AnalysisChart, type AnalysisDataPoint } from './AnalysisChart';
 import { useAIAnalysis } from '../ai/AIAnalysisOverlay';
+import { parseGTPCoordinate } from '../../utils/gtpUtils';
 import './AnalysisGraphPanel.css';
 
 export interface AnalysisGraphPanelProps {
@@ -68,12 +71,126 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
   const [showMoveStrengthInfo, setShowMoveStrengthInfo] = useState(false);
   const [showMoveLossTable, setShowMoveLossTable] = useState(false);
 
+  // AI Engine for generating alternate playouts
+  const { engine: aiEngine, isEngineReady } = useAIEngine();
+
+  // State for alternate playouts
+  const [alternatePlayouts, setAlternatePlayouts] = useState<
+    Map<number | string, { moves: string[]; isGenerating: boolean }>
+  >(new Map());
+  const [expandedPlayouts, setExpandedPlayouts] = useState<Set<number | string>>(new Set());
+
   const handleToggleWinRate = useCallback(() => {
     setShowWinRate(prev => !prev);
   }, []);
 
   const handleToggleScoreLead = useCallback(() => {
     setShowScoreLead(prev => !prev);
+  }, []);
+
+  /**
+   * Generate an alternate playout for a given node by using generateMove repeatedly
+   * Stores the moves to display in the panel
+   */
+  const generateAlternatePlayout = useCallback(
+    async (nodeId: number | string, moveNumber: number, playoutLength: number = 20) => {
+      if (!aiEngine || !isEngineReady) {
+        console.warn('AI Engine not ready');
+        return;
+      }
+
+      // Mark as generating
+      setAlternatePlayouts(prev => {
+        const newMap = new Map(prev);
+        newMap.set(nodeId, { moves: [], isGenerating: true });
+        return newMap;
+      });
+
+      try {
+        if (!gameTree) {
+          console.warn('Game tree not available');
+          return;
+        }
+
+        const boardSize = gameInfo.boardSize ?? 19;
+        const komi = gameInfo.komi ?? 7.5;
+
+        // Get the path to the node and rebuild the board state
+        const pathToNode = getPathToNode(gameTree, nodeId);
+        let state = createInitialAnalysisState(boardSize);
+
+        // Apply all moves up to this node
+        for (let i = 0; i < pathToNode.length; i++) {
+          state = updateAnalysisState(state, pathToNode[i] as any, i);
+        }
+
+        // Generate playout moves
+        const playoutMoves: string[] = [];
+        let currentBoard = state.board.clone();
+        let currentPlayer = state.nextToPlay;
+
+        for (let i = 0; i < playoutLength; i++) {
+          try {
+            const moveStr = await aiEngine.generateMove(currentBoard.signMap, {
+              komi,
+              nextToPlay: currentPlayer,
+            });
+
+            playoutMoves.push(`${currentPlayer}:${moveStr}`);
+
+            // Parse the move and apply it to the board
+            const vertex = parseGTPCoordinate(moveStr, boardSize);
+
+            if (vertex !== null) {
+              // Apply the move to the board
+              const sign = currentPlayer === 'B' ? 1 : -1;
+              currentBoard = currentBoard.makeMove(sign, vertex, {
+                disableKoCheck: false,
+                mutate: false,
+              });
+            }
+            // If vertex is null, it's a pass move - don't modify the board
+
+            // Switch player
+            currentPlayer = currentPlayer === 'B' ? 'W' : 'B';
+          } catch (error) {
+            console.error('Error generating move in playout:', error);
+            break;
+          }
+        }
+
+        // Update the playouts map
+        setAlternatePlayouts(prev => {
+          const newMap = new Map(prev);
+          newMap.set(nodeId, { moves: playoutMoves, isGenerating: false });
+          return newMap;
+        });
+      } catch (error) {
+        console.error('Error generating alternate playout:', error);
+        // Clear the generating state
+        setAlternatePlayouts(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(nodeId);
+          return newMap;
+        });
+      }
+    },
+    [aiEngine, isEngineReady, gameTree, gameInfo]
+  );
+
+  /**
+   * Toggle expansion of a playout display
+   */
+  const togglePlayoutExpansion = useCallback((nodeId: number | string) => {
+    setExpandedPlayouts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(nodeId)) {
+        newSet.delete(nodeId);
+      } else {
+        newSet.add(nodeId);
+      }
+      return newSet;
+    });
   }, []);
 
   // Build data points from the current branch (root → current → end of branch)
@@ -232,6 +349,24 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     // Sort by point loss (descending) and take top 10
     return losses.sort((a, b) => b.pointLoss - a.pointLoss).slice(0, 10);
   }, [dataPoints, fullPath]);
+
+  // Automatically generate playouts for top 10 moves when the table is shown
+  useEffect(() => {
+    if (showMoveLossTable && topMoveLosses.length > 0 && isEngineReady) {
+      topMoveLosses.forEach(loss => {
+        // Only generate if not already generated or generating
+        if (!alternatePlayouts.has(loss.nodeId)) {
+          generateAlternatePlayout(loss.nodeId, loss.moveNumber);
+        }
+      });
+    }
+  }, [
+    showMoveLossTable,
+    topMoveLosses,
+    isEngineReady,
+    alternatePlayouts,
+    generateAlternatePlayout,
+  ]);
 
   const handleNavigate = useCallback(
     (nodeId: number | string) => {
@@ -430,33 +565,88 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                 <th>Point Loss</th>
                 <th>Score Before</th>
                 <th>Score After</th>
+                <th>Alt. Playout</th>
               </tr>
             </thead>
             <tbody>
-              {topMoveLosses.map((loss, index) => (
-                <tr
-                  key={loss.nodeId}
-                  onClick={() => handleNavigate(loss.nodeId)}
-                  className="move-loss-row"
-                >
-                  <td>{index + 1}</td>
-                  <td>{loss.moveNumber}</td>
-                  <td>
-                    <span className={`player-indicator player-${loss.player.toLowerCase()}`}>
-                      {loss.player}
-                    </span>
-                  </td>
-                  <td className="point-loss-value">{loss.pointLoss.toFixed(1)}</td>
-                  <td>
-                    {loss.scoreBefore > 0 ? '+' : ''}
-                    {loss.scoreBefore.toFixed(1)}
-                  </td>
-                  <td>
-                    {loss.scoreAfter > 0 ? '+' : ''}
-                    {loss.scoreAfter.toFixed(1)}
-                  </td>
-                </tr>
-              ))}
+              {topMoveLosses.map((loss, index) => {
+                const playout = alternatePlayouts.get(loss.nodeId);
+                const isExpanded = expandedPlayouts.has(loss.nodeId);
+                return (
+                  <React.Fragment key={loss.nodeId}>
+                    <tr className="move-loss-row">
+                      <td onClick={() => handleNavigate(loss.nodeId)}>{index + 1}</td>
+                      <td onClick={() => handleNavigate(loss.nodeId)}>{loss.moveNumber}</td>
+                      <td onClick={() => handleNavigate(loss.nodeId)}>
+                        <span className={`player-indicator player-${loss.player.toLowerCase()}`}>
+                          {loss.player}
+                        </span>
+                      </td>
+                      <td onClick={() => handleNavigate(loss.nodeId)} className="point-loss-value">
+                        {loss.pointLoss.toFixed(1)}
+                      </td>
+                      <td onClick={() => handleNavigate(loss.nodeId)}>
+                        {loss.scoreBefore > 0 ? '+' : ''}
+                        {loss.scoreBefore.toFixed(1)}
+                      </td>
+                      <td onClick={() => handleNavigate(loss.nodeId)}>
+                        {loss.scoreAfter > 0 ? '+' : ''}
+                        {loss.scoreAfter.toFixed(1)}
+                      </td>
+                      <td>
+                        <button
+                          className="playout-toggle-button"
+                          onClick={e => {
+                            e.stopPropagation();
+                            if (!playout && !alternatePlayouts.get(loss.nodeId)?.isGenerating) {
+                              generateAlternatePlayout(loss.nodeId, loss.moveNumber);
+                            }
+                            togglePlayoutExpansion(loss.nodeId);
+                          }}
+                          disabled={playout?.isGenerating}
+                          title={
+                            playout?.isGenerating
+                              ? 'Generating playout...'
+                              : isExpanded
+                                ? 'Hide alternate playout'
+                                : 'Show alternate playout'
+                          }
+                        >
+                          {playout?.isGenerating ? (
+                            <LuLoader className="spinner" size={14} />
+                          ) : (
+                            <LuPlay size={14} />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+                    {isExpanded && playout && !playout.isGenerating && (
+                      <tr className="playout-detail-row">
+                        <td colSpan={7}>
+                          <div className="playout-moves">
+                            <strong>Alternate playout:</strong>
+                            <div className="playout-moves-list">
+                              {playout.moves.map((move, idx) => {
+                                const [player, coord] = move.split(':');
+                                return (
+                                  <span key={idx} className="playout-move">
+                                    <span
+                                      className={`player-indicator player-${player.toLowerCase()}`}
+                                    >
+                                      {player}
+                                    </span>
+                                    {coord}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
