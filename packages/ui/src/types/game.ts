@@ -176,6 +176,10 @@ export interface GameTreeContextValue {
   loadSGF: (sgfContent: string) => void;
   saveSGF: () => string;
   updateGameInfo: (info: Partial<GameInfo>) => void;
+  addMoveSequence: (
+    startNodeId: number | string,
+    moves: Array<{ player: 'B' | 'W'; coord: string }>
+  ) => any;
 
   // Editing
   editMode: boolean;

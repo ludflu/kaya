@@ -229,6 +229,7 @@ export const GameTreeProvider: React.FC<{
     clearSetupStones,
     clearAllMarkersAndLabels,
     deleteOtherBranches,
+    addMoveSequence,
   } = useGameModification({
     gameTree,
     setGameTree: setGameTreeWithHistory,
@@ -660,6 +661,7 @@ export const GameTreeProvider: React.FC<{
       makeMainVariation,
       shiftVariation,
       toggleEditMode,
+      addMoveSequence,
 
       // Scoring
       scoreMode,

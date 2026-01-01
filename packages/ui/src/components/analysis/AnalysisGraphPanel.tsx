@@ -47,6 +47,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     navigateToMove,
     analysisMode,
     toggleAnalysisMode,
+    addMoveSequence,
   } = useGameTree();
 
   const {
@@ -177,6 +178,62 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       }
     },
     [aiEngine, isEngineReady, gameTree, gameInfo]
+  );
+
+  /**
+   * Add the alternate playout to the game tree as a new branch
+   * This creates a variation starting from the parent of the blunder node
+   * Uses addMoveSequence() to avoid navigation and caching side effects
+   */
+  const addPlayoutToTree = useCallback(
+    (nodeId: number | string) => {
+      if (!gameTree) {
+        console.warn('Game tree not available');
+        return;
+      }
+
+      const playout = alternatePlayouts.get(nodeId);
+      if (!playout || playout.isGenerating || playout.moves.length === 0) {
+        console.warn('No playout available to add to tree');
+        return;
+      }
+
+      const boardSize = gameInfo.boardSize ?? 19;
+
+      // Find the parent node of the blunder
+      const blunderNode = gameTree.get(nodeId);
+      if (!blunderNode || blunderNode.parentId === null) {
+        console.warn('Cannot find parent node');
+        return;
+      }
+
+      const parentNodeId = blunderNode.parentId;
+
+      // Convert playout moves to SGF format
+      const moves = playout.moves
+        .map(move => {
+          const [player, coord] = move.split(':');
+          const vertex = parseGTPCoordinate(coord, boardSize);
+
+          if (vertex === null) {
+            // Pass move
+            return { player: player as 'B' | 'W', coord: '' };
+          }
+
+          const [x, y] = vertex;
+          // Convert to SGF coordinate (a-s for 19x19)
+          const sgfX = String.fromCharCode(97 + x);
+          const sgfY = String.fromCharCode(97 + y);
+          const sgfCoord = sgfX + sgfY;
+
+          return { player: player as 'B' | 'W', coord: sgfCoord };
+        })
+        .filter(m => m !== null);
+
+      // Add the move sequence to the tree
+      addMoveSequence(parentNodeId, moves);
+    },
+    [gameTree, alternatePlayouts, gameInfo, addMoveSequence]
   );
 
   /**
@@ -601,6 +658,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                             e.stopPropagation();
                             if (!playout && !alternatePlayouts.get(loss.nodeId)?.isGenerating) {
                               generateAlternatePlayout(loss.nodeId, loss.moveNumber);
+                            } else if (playout && !playout.isGenerating) {
+                              // Add the playout to the game tree
+                              addPlayoutToTree(loss.nodeId);
                             }
                             togglePlayoutExpansion(loss.nodeId);
                           }}
@@ -608,9 +668,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                           title={
                             playout?.isGenerating
                               ? 'Generating playout...'
-                              : isExpanded
-                                ? 'Hide alternate playout'
-                                : 'Show alternate playout'
+                              : playout
+                                ? 'Add alternate playout to game tree'
+                                : 'Generate alternate playout'
                           }
                         >
                           {playout?.isGenerating ? (
