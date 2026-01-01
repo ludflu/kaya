@@ -300,7 +300,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     [alternatePlayouts, generateAlternatePlayout, addPlayoutToTree, togglePlayoutExpansion]
   );
 
-  // Build data points from the current branch (root → current → end of branch)
+  // Build data points from the main line only
   const analysisData = useMemo((): {
     dataPoints: AnalysisDataPoint[];
     totalPositions: number;
@@ -321,18 +321,17 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     const boardSize = gameInfo.boardSize ?? 19;
     const komi = gameInfo.komi ?? 7.5;
 
-    // Step 1: Get path from root to current node (this is the branch we're on)
-    const pathToCurrentNode = getPathToNode(gameTree, currentNodeId);
-    const currentPositionIndex = pathToCurrentNode.length - 1;
+    // Get only the main line nodes (ignoring variations)
+    const fullPath: Array<{ id: number | string; data: any }> = [];
+    for (const node of gameTree.listMainNodes()) {
+      fullPath.push(node);
+    }
 
-    // Step 2: Extend from current node to end of branch (following first child)
-    const fullPath: Array<{ id: number | string; data: any }> = [...pathToCurrentNode];
-    let lastNode = pathToCurrentNode[pathToCurrentNode.length - 1];
-
-    while (lastNode && lastNode.children.length > 0) {
-      const nextChild = lastNode.children[0];
-      fullPath.push(nextChild);
-      lastNode = nextChild;
+    // Find the current position index in the main line
+    let currentPositionIndex = fullPath.findIndex(node => node.id === currentNodeId);
+    // If current node is not on main line, set index to -1
+    if (currentPositionIndex === -1) {
+      currentPositionIndex = 0;
     }
 
     if (fullPath.length === 0)
