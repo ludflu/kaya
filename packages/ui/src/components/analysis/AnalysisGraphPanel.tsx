@@ -632,12 +632,12 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         <button
           className={`analysis-legend-toggle ${showMoveLossTable ? 'active' : ''}`}
           onClick={() => setShowMoveLossTable(prev => !prev)}
-          title="Show top moves by point loss"
-          aria-label="Toggle move loss table"
+          title={t('analysis.toggleTopBlunders')}
+          aria-label={t('analysis.toggleTopBlunders')}
           aria-pressed={showMoveLossTable}
           disabled={topMoveLosses.length === 0}
         >
-          <span className="legend-label">Top Losses</span>
+          <span className="legend-label">{t('analysis.topBlunders')}</span>
         </button>
       </div>
 
@@ -689,13 +689,13 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
           <table className="move-loss-table">
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Move</th>
-                <th>Player</th>
-                <th>Point Loss</th>
-                <th>Score Before</th>
-                <th>Score After</th>
-                <th>Alt. Playout</th>
+                <th>{t('analysis.blunderRank')}</th>
+                <th>{t('analysis.blunderMove')}</th>
+                <th>{t('analysis.blunderPlayer')}</th>
+                <th>{t('analysis.blunderPointLoss')}</th>
+                <th>{t('analysis.blunderScoreBefore')}</th>
+                <th>{t('analysis.blunderScoreAfter')}</th>
+                <th>{t('analysis.blunderAltPlayout')}</th>
               </tr>
             </thead>
             <tbody>
@@ -733,10 +733,10 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                           disabled={playout?.isGenerating}
                           title={
                             playout?.isGenerating
-                              ? 'Generating playout...'
+                              ? t('analysis.generatingPlayout')
                               : playout?.addedToTree
-                                ? 'Toggle playout details'
-                                : 'Generate and add alternate playout to game tree'
+                                ? t('analysis.togglePlayoutDetails')
+                                : t('analysis.generateAndAddPlayout')
                           }
                         >
                           {playout?.isGenerating ? (
@@ -751,7 +751,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                       <tr className="playout-detail-row">
                         <td colSpan={7}>
                           <div className="playout-moves">
-                            <strong>Alternate playout:</strong>
+                            <strong>{t('analysis.alternatePlayout')}:</strong>
                             <div className="playout-moves-list">
                               {playout.moves.map((move, idx) => {
                                 const [player, coord] = move.split(':');

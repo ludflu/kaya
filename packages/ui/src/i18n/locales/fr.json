@@ -160,7 +160,20 @@
     "analyzingProgress": "Analyse : {{progress}}%",
     "stopAnalysisButton": "Arrêter l'analyse",
     "analysisModeOn": "Mode analyse activé - Cliquer pour désactiver",
-    "analysisModeOff": "Mode analyse désactivé - Cliquer pour activer"
+    "analysisModeOff": "Mode analyse désactivé - Cliquer pour activer",
+    "topBlunders": "Pires Erreurs",
+    "toggleTopBlunders": "Afficher les meilleurs coups par perte de points",
+    "blunderRank": "Rang",
+    "blunderMove": "Coup",
+    "blunderPlayer": "Joueur",
+    "blunderPointLoss": "Perte de Points",
+    "blunderScoreBefore": "Score Avant",
+    "blunderScoreAfter": "Score Après",
+    "blunderAltPlayout": "Variante Alt.",
+    "generatingPlayout": "Génération de la variante...",
+    "togglePlayoutDetails": "Afficher/masquer les détails de la variante",
+    "generateAndAddPlayout": "Générer et ajouter une variante alternative à l'arbre de jeu",
+    "alternatePlayout": "Variante alternative"
   },
 
   "analysisLegend": {
