@@ -439,6 +439,31 @@ export function useGameModification({
     boardCache.clear();
   }, [gameTree, currentNodeId, setGameTree, setIsDirty]);
 
+  const addMoveSequence = useCallback(
+    (startNodeId: number | string, moves: Array<{ player: 'B' | 'W'; coord: string }>) => {
+      if (!gameTree) return null;
+
+      const newTree = gameTree.mutate(draft => {
+        let currentId = startNodeId;
+
+        for (const { player, coord } of moves) {
+          const property = player === 'B' ? 'B' : 'W';
+          const newNodeId = draft.appendNode(currentId, { [property]: [coord] });
+          if (newNodeId !== null) {
+            currentId = newNodeId;
+          }
+        }
+      });
+
+      setGameTree(newTree);
+      setIsDirty(true);
+      boardCache.clear();
+
+      return newTree;
+    },
+    [gameTree, setGameTree, setIsDirty]
+  );
+
   return {
     makeMove: playMove,
     addSetupStone,
@@ -456,5 +481,6 @@ export function useGameModification({
     clearSetupStones,
     clearAllMarkersAndLabels,
     deleteOtherBranches,
+    addMoveSequence,
   };
 }
