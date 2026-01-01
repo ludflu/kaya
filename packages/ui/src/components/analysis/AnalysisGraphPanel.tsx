@@ -91,13 +91,17 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
 
   /**
    * Generate an alternate playout for a given node by using generateMove repeatedly
-   * Stores the moves to display in the panel
+   * Stores the moves to display in the panel and returns them
    */
   const generateAlternatePlayout = useCallback(
-    async (nodeId: number | string, moveNumber: number, playoutLength: number = 20) => {
+    async (
+      nodeId: number | string,
+      moveNumber: number,
+      playoutLength: number = 20
+    ): Promise<string[] | null> => {
       if (!aiEngine || !isEngineReady) {
         console.warn('AI Engine not ready');
-        return;
+        return null;
       }
 
       // Mark as generating
@@ -110,7 +114,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       try {
         if (!gameTree) {
           console.warn('Game tree not available');
-          return;
+          return null;
         }
 
         const boardSize = gameInfo.boardSize ?? 19;
@@ -167,6 +171,8 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
           newMap.set(nodeId, { moves: playoutMoves, isGenerating: false });
           return newMap;
         });
+
+        return playoutMoves;
       } catch (error) {
         console.error('Error generating alternate playout:', error);
         // Clear the generating state
@@ -175,6 +181,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
           newMap.delete(nodeId);
           return newMap;
         });
+        return null;
       }
     },
     [aiEngine, isEngineReady, gameTree, gameInfo]
@@ -186,15 +193,25 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
    * Uses addMoveSequence() to avoid navigation and caching side effects
    */
   const addPlayoutToTree = useCallback(
-    (nodeId: number | string) => {
+    (nodeId: number | string, playoutMoves?: string[]) => {
       if (!gameTree) {
         console.warn('Game tree not available');
         return;
       }
 
-      const playout = alternatePlayouts.get(nodeId);
-      if (!playout || playout.isGenerating || playout.moves.length === 0) {
-        console.warn('No playout available to add to tree');
+      // Use provided moves or get from state
+      let moves = playoutMoves;
+      if (!moves) {
+        const playout = alternatePlayouts.get(nodeId);
+        if (!playout || playout.isGenerating || playout.moves.length === 0) {
+          console.warn('No playout available to add to tree');
+          return;
+        }
+        moves = playout.moves;
+      }
+
+      if (moves.length === 0) {
+        console.warn('No moves to add');
         return;
       }
 
@@ -210,7 +227,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       const parentNodeId = blunderNode.parentId;
 
       // Convert playout moves to SGF format
-      const moves = playout.moves
+      const sgfMoves = moves
         .map(move => {
           const [player, coord] = move.split(':');
           const vertex = parseGTPCoordinate(coord, boardSize);
@@ -231,7 +248,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         .filter(m => m !== null);
 
       // Add the move sequence to the tree
-      addMoveSequence(parentNodeId, moves);
+      addMoveSequence(parentNodeId, sgfMoves);
     },
     [gameTree, alternatePlayouts, gameInfo, addMoveSequence]
   );
@@ -258,20 +275,25 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     async (nodeId: number | string, moveNumber: number) => {
       const playout = alternatePlayouts.get(nodeId);
 
-      // If playout doesn't exist or is generating, start generation
-      if (!playout || playout.isGenerating) {
-        if (!playout) {
-          // Start generation
-          await generateAlternatePlayout(nodeId, moveNumber);
-          // After generation completes, add to tree
-          addPlayoutToTree(nodeId);
+      // If playout doesn't exist, generate it
+      if (!playout) {
+        // Start generation
+        const moves = await generateAlternatePlayout(nodeId, moveNumber);
+        // After generation completes, add to tree with the returned moves
+        if (moves && moves.length > 0) {
+          addPlayoutToTree(nodeId, moves);
+          togglePlayoutExpansion(nodeId);
         }
-        // If already generating, just wait (do nothing)
+        return;
+      }
+
+      // If already generating, just wait (do nothing)
+      if (playout.isGenerating) {
         return;
       }
 
       // Playout exists and is ready, add to tree
-      addPlayoutToTree(nodeId);
+      addPlayoutToTree(nodeId, playout.moves);
       // Optionally expand to show the moves
       togglePlayoutExpansion(nodeId);
     },
