@@ -251,6 +251,33 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     });
   }, []);
 
+  /**
+   * Handle click on the playout button - generate playout and add to tree
+   */
+  const handlePlayoutButtonClick = useCallback(
+    async (nodeId: number | string, moveNumber: number) => {
+      const playout = alternatePlayouts.get(nodeId);
+
+      // If playout doesn't exist or is generating, start generation
+      if (!playout || playout.isGenerating) {
+        if (!playout) {
+          // Start generation
+          await generateAlternatePlayout(nodeId, moveNumber);
+          // After generation completes, add to tree
+          addPlayoutToTree(nodeId);
+        }
+        // If already generating, just wait (do nothing)
+        return;
+      }
+
+      // Playout exists and is ready, add to tree
+      addPlayoutToTree(nodeId);
+      // Optionally expand to show the moves
+      togglePlayoutExpansion(nodeId);
+    },
+    [alternatePlayouts, generateAlternatePlayout, addPlayoutToTree, togglePlayoutExpansion]
+  );
+
   // Build data points from the current branch (root → current → end of branch)
   const analysisData = useMemo((): {
     dataPoints: AnalysisDataPoint[];
@@ -407,24 +434,6 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     // Sort by point loss (descending) and take top 10
     return losses.sort((a, b) => b.pointLoss - a.pointLoss).slice(0, 10);
   }, [dataPoints, fullPath]);
-
-  // Automatically generate playouts for top 10 moves when the table is shown
-  useEffect(() => {
-    if (showMoveLossTable && topMoveLosses.length > 0 && isEngineReady) {
-      topMoveLosses.forEach(loss => {
-        // Only generate if not already generated or generating
-        if (!alternatePlayouts.has(loss.nodeId)) {
-          generateAlternatePlayout(loss.nodeId, loss.moveNumber);
-        }
-      });
-    }
-  }, [
-    showMoveLossTable,
-    topMoveLosses,
-    isEngineReady,
-    alternatePlayouts,
-    generateAlternatePlayout,
-  ]);
 
   const handleNavigate = useCallback(
     (nodeId: number | string) => {
@@ -656,21 +665,13 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                           className="playout-toggle-button"
                           onClick={e => {
                             e.stopPropagation();
-                            if (!playout && !alternatePlayouts.get(loss.nodeId)?.isGenerating) {
-                              generateAlternatePlayout(loss.nodeId, loss.moveNumber);
-                            } else if (playout && !playout.isGenerating) {
-                              // Add the playout to the game tree
-                              addPlayoutToTree(loss.nodeId);
-                            }
-                            togglePlayoutExpansion(loss.nodeId);
+                            handlePlayoutButtonClick(loss.nodeId, loss.moveNumber);
                           }}
                           disabled={playout?.isGenerating}
                           title={
                             playout?.isGenerating
                               ? 'Generating playout...'
-                              : playout
-                                ? 'Add alternate playout to game tree'
-                                : 'Generate alternate playout'
+                              : 'Generate and add alternate playout to game tree'
                           }
                         >
                           {playout?.isGenerating ? (
