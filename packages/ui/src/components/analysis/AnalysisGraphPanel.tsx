@@ -77,7 +77,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
 
   // State for alternate playouts
   const [alternatePlayouts, setAlternatePlayouts] = useState<
-    Map<number | string, { moves: string[]; isGenerating: boolean }>
+    Map<number | string, { moves: string[]; isGenerating: boolean; addedToTree: boolean }>
   >(new Map());
   const [expandedPlayouts, setExpandedPlayouts] = useState<Set<number | string>>(new Set());
 
@@ -107,7 +107,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       // Mark as generating
       setAlternatePlayouts(prev => {
         const newMap = new Map(prev);
-        newMap.set(nodeId, { moves: [], isGenerating: true });
+        newMap.set(nodeId, { moves: [], isGenerating: true, addedToTree: false });
         return newMap;
       });
 
@@ -168,7 +168,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         // Update the playouts map
         setAlternatePlayouts(prev => {
           const newMap = new Map(prev);
-          newMap.set(nodeId, { moves: playoutMoves, isGenerating: false });
+          newMap.set(nodeId, { moves: playoutMoves, isGenerating: false, addedToTree: false });
           return newMap;
         });
 
@@ -282,6 +282,15 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         // After generation completes, add to tree with the returned moves
         if (moves && moves.length > 0) {
           addPlayoutToTree(nodeId, moves);
+          // Mark as added to tree
+          setAlternatePlayouts(prev => {
+            const newMap = new Map(prev);
+            const existing = newMap.get(nodeId);
+            if (existing) {
+              newMap.set(nodeId, { ...existing, addedToTree: true });
+            }
+            return newMap;
+          });
           togglePlayoutExpansion(nodeId);
         }
         return;
@@ -292,8 +301,23 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         return;
       }
 
+      // If already added to tree, just toggle expansion
+      if (playout.addedToTree) {
+        togglePlayoutExpansion(nodeId);
+        return;
+      }
+
       // Playout exists and is ready, add to tree
       addPlayoutToTree(nodeId, playout.moves);
+      // Mark as added to tree
+      setAlternatePlayouts(prev => {
+        const newMap = new Map(prev);
+        const existing = newMap.get(nodeId);
+        if (existing) {
+          newMap.set(nodeId, { ...existing, addedToTree: true });
+        }
+        return newMap;
+      });
       // Optionally expand to show the moves
       togglePlayoutExpansion(nodeId);
     },
@@ -692,7 +716,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
                           title={
                             playout?.isGenerating
                               ? 'Generating playout...'
-                              : 'Generate and add alternate playout to game tree'
+                              : playout?.addedToTree
+                                ? 'Toggle playout details'
+                                : 'Generate and add alternate playout to game tree'
                           }
                         >
                           {playout?.isGenerating ? (
