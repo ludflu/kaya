@@ -48,6 +48,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     analysisMode,
     toggleAnalysisMode,
     addMoveSequence,
+    requestCenterOnCurrentNode,
   } = useGameTree();
 
   const {
@@ -294,12 +295,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
             return newMap;
           });
           togglePlayoutExpansion(nodeId);
-          // Navigate to the first node of the new branch after a brief delay
-          // to ensure the tree UI has updated
           if (firstNodeId !== null) {
-            setTimeout(() => {
-              navigate(firstNodeId);
-            }, 100);
+            navigate(firstNodeId);
+            requestCenterOnCurrentNode();
           }
         }
         return;
@@ -329,12 +327,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       });
       // Optionally expand to show the moves
       togglePlayoutExpansion(nodeId);
-      // Navigate to the first node of the new branch after a brief delay
-      // to ensure the tree UI has updated
       if (firstNodeId !== null) {
-        setTimeout(() => {
-          navigate(firstNodeId);
-        }, 100);
+        navigate(firstNodeId);
+        requestCenterOnCurrentNode();
       }
     },
     [
@@ -343,6 +338,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       addPlayoutToTree,
       togglePlayoutExpansion,
       navigate,
+      requestCenterOnCurrentNode,
     ]
   );
 

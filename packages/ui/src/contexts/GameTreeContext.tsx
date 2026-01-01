@@ -105,6 +105,12 @@ export const GameTreeProvider: React.FC<{
   // Track "clean" analysis cache size for dirty state calculation (use state to trigger re-renders)
   const [cleanAnalysisCacheSize, setCleanAnalysisCacheSize] = React.useState<number>(0);
 
+  // Manual centering requests
+  const [centerRequestTime, setCenterRequestTime] = React.useState<number | null>(null);
+  const requestCenterOnCurrentNode = React.useCallback(() => {
+    setCenterRequestTime(Date.now());
+  }, []);
+
   // 1.5. Undo/Redo History
   const history = useGameHistory({ maxHistorySize: 100 });
   const redoStackRef = useRef<Array<{ tree: any; currentNodeId: number | string }>>([]);
@@ -748,6 +754,10 @@ export const GameTreeProvider: React.FC<{
       // Branch management
       deleteOtherBranches,
 
+      // Manual viewport control
+      requestCenterOnCurrentNode,
+      centerRequestTime,
+
       moveName,
       moveUrl,
       patternMatchingEnabled,
@@ -842,6 +852,8 @@ export const GameTreeProvider: React.FC<{
       canUndo,
       canRedo,
       deleteOtherBranches,
+      requestCenterOnCurrentNode,
+      centerRequestTime,
     ]
   );
 
