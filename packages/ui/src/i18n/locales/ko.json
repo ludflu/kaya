@@ -160,7 +160,20 @@
     "analyzingProgress": "분석 중: {{progress}}%",
     "stopAnalysisButton": "분석 중지",
     "analysisModeOn": "분석 모드 켜짐 - 클릭하여 끄기",
-    "analysisModeOff": "분석 모드 꺼짐 - 클릭하여 켜기"
+    "analysisModeOff": "분석 모드 꺼짐 - 클릭하여 켜기",
+    "topBlunders": "최악의 실수",
+    "toggleTopBlunders": "점수 손실별 최상위 수 표시",
+    "blunderRank": "순위",
+    "blunderMove": "수",
+    "blunderPlayer": "플레이어",
+    "blunderPointLoss": "점수 손실",
+    "blunderScoreBefore": "이전 점수",
+    "blunderScoreAfter": "이후 점수",
+    "blunderAltPlayout": "대안 플레이아웃",
+    "generatingPlayout": "플레이아웃 생성 중...",
+    "togglePlayoutDetails": "플레이아웃 상세 정보 토글",
+    "generateAndAddPlayout": "대안 플레이아웃을 생성하여 게임 트리에 추가",
+    "alternatePlayout": "대안 플레이아웃"
   },
 
   "analysisLegend": {

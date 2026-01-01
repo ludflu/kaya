@@ -160,7 +160,20 @@
     "analyzingProgress": "Analysiere: {{progress}}%",
     "stopAnalysisButton": "Analyse stoppen",
     "analysisModeOn": "Analyse-Modus aktiv - Klicken zum Deaktivieren",
-    "analysisModeOff": "Analyse-Modus inaktiv - Klicken zum Aktivieren"
+    "analysisModeOff": "Analyse-Modus inaktiv - Klicken zum Aktivieren",
+    "topBlunders": "Top Fehler",
+    "toggleTopBlunders": "Top Züge nach Punktverlust anzeigen",
+    "blunderRank": "Rang",
+    "blunderMove": "Zug",
+    "blunderPlayer": "Spieler",
+    "blunderPointLoss": "Punktverlust",
+    "blunderScoreBefore": "Stand davor",
+    "blunderScoreAfter": "Stand danach",
+    "blunderAltPlayout": "Alt. Playout",
+    "generatingPlayout": "Playout wird generiert...",
+    "togglePlayoutDetails": "Playout-Details umschalten",
+    "generateAndAddPlayout": "Alternativen Playout generieren und zum Spielbaum hinzufügen",
+    "alternatePlayout": "Alternativer Playout"
   },
 
   "analysisLegend": {

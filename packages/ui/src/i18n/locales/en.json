@@ -160,7 +160,20 @@
     "analyzingProgress": "Analyzing: {{progress}}%",
     "stopAnalysisButton": "Stop analysis",
     "analysisModeOn": "Analysis Mode On - Click to disable",
-    "analysisModeOff": "Analysis Mode Off - Click to enable"
+    "analysisModeOff": "Analysis Mode Off - Click to enable",
+    "topBlunders": "Top Blunders",
+    "toggleTopBlunders": "Show top moves by point loss",
+    "blunderRank": "Rank",
+    "blunderMove": "Move",
+    "blunderPlayer": "Player",
+    "blunderPointLoss": "Point Loss",
+    "blunderScoreBefore": "Score Before",
+    "blunderScoreAfter": "Score After",
+    "blunderAltPlayout": "Alt. Playout",
+    "generatingPlayout": "Generating playout...",
+    "togglePlayoutDetails": "Toggle playout details",
+    "generateAndAddPlayout": "Generate and add alternate playout to game tree",
+    "alternatePlayout": "Alternate playout"
   },
 
   "analysisLegend": {

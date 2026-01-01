@@ -160,7 +160,20 @@
     "analyzingProgress": "Analizzando: {{progress}}%",
     "stopAnalysisButton": "Ferma analisi",
     "analysisModeOn": "Modalità analisi attiva - Clicca per disattivare",
-    "analysisModeOff": "Modalità analisi disattiva - Clicca per attivare"
+    "analysisModeOff": "Modalità analisi disattiva - Clicca per attivare",
+    "topBlunders": "Errori Peggiori",
+    "toggleTopBlunders": "Mostra le migliori mosse per punti persi",
+    "blunderRank": "Classifica",
+    "blunderMove": "Mossa",
+    "blunderPlayer": "Giocatore",
+    "blunderPointLoss": "Punti Persi",
+    "blunderScoreBefore": "Punteggio Prima",
+    "blunderScoreAfter": "Punteggio Dopo",
+    "blunderAltPlayout": "Playout Alt.",
+    "generatingPlayout": "Generazione playout in corso...",
+    "togglePlayoutDetails": "Mostra/nascondi dettagli playout",
+    "generateAndAddPlayout": "Genera e aggiungi playout alternativo all'albero di gioco",
+    "alternatePlayout": "Playout alternativo"
   },
 
   "analysisLegend": {
