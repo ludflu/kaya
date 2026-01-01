@@ -160,7 +160,20 @@
     "analyzingProgress": "分析中：{{progress}}%",
     "stopAnalysisButton": "停止分析",
     "analysisModeOn": "分析模式已开启 - 点击关闭",
-    "analysisModeOff": "分析模式已关闭 - 点击开启"
+    "analysisModeOff": "分析模式已关闭 - 点击开启",
+    "topBlunders": "最大失误",
+    "toggleTopBlunders": "按失分显示最佳着法",
+    "blunderRank": "排名",
+    "blunderMove": "着法",
+    "blunderPlayer": "玩家",
+    "blunderPointLoss": "失分",
+    "blunderScoreBefore": "之前分数",
+    "blunderScoreAfter": "之后分数",
+    "blunderAltPlayout": "替代变化",
+    "generatingPlayout": "正在生成变化...",
+    "togglePlayoutDetails": "切换变化详情",
+    "generateAndAddPlayout": "生成替代变化并添加到棋谱树",
+    "alternatePlayout": "替代变化"
   },
 
   "analysisLegend": {

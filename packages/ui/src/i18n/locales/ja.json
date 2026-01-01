@@ -160,7 +160,20 @@
     "analyzingProgress": "分析中: {{progress}}%",
     "stopAnalysisButton": "分析を停止",
     "analysisModeOn": "分析モードがオン - クリックで無効化",
-    "analysisModeOff": "分析モードがオフ - クリックで有効化"
+    "analysisModeOff": "分析モードがオフ - クリックで有効化",
+    "topBlunders": "トップ失着",
+    "toggleTopBlunders": "ポイント損失によるトップムーブを表示",
+    "blunderRank": "ランク",
+    "blunderMove": "手",
+    "blunderPlayer": "プレイヤー",
+    "blunderPointLoss": "ポイント損失",
+    "blunderScoreBefore": "前のスコア",
+    "blunderScoreAfter": "後のスコア",
+    "blunderAltPlayout": "代案",
+    "generatingPlayout": "代案を生成中...",
+    "togglePlayoutDetails": "代案の詳細を切り替え",
+    "generateAndAddPlayout": "代案を生成して棋譜に追加",
+    "alternatePlayout": "代案"
   },
 
   "analysisLegend": {

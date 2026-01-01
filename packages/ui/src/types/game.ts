@@ -176,6 +176,10 @@ export interface GameTreeContextValue {
   loadSGF: (sgfContent: string) => void;
   saveSGF: () => string;
   updateGameInfo: (info: Partial<GameInfo>) => void;
+  addMoveSequence: (
+    startNodeId: number | string,
+    moves: Array<{ player: 'B' | 'W'; coord: string }>
+  ) => number | string | null;
 
   // Editing
   editMode: boolean;
@@ -281,4 +285,8 @@ export interface GameTreeContextValue {
 
   // Branch management
   deleteOtherBranches: () => void;
+
+  // Manual viewport control
+  requestCenterOnCurrentNode: () => void;
+  centerRequestTime: number | null;
 }

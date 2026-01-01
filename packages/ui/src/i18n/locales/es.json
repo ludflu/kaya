@@ -160,7 +160,20 @@
     "analyzingProgress": "Analizando: {{progress}}%",
     "stopAnalysisButton": "Detener análisis",
     "analysisModeOn": "Modo análisis activado - Haz clic para desactivar",
-    "analysisModeOff": "Modo análisis desactivado - Haz clic para activar"
+    "analysisModeOff": "Modo análisis desactivado - Haz clic para activar",
+    "topBlunders": "Errores Principales",
+    "toggleTopBlunders": "Mostrar mejores jugadas por puntos perdidos",
+    "blunderRank": "Rango",
+    "blunderMove": "Jugada",
+    "blunderPlayer": "Jugador",
+    "blunderPointLoss": "Puntos Perdidos",
+    "blunderScoreBefore": "Puntuación Anterior",
+    "blunderScoreAfter": "Puntuación Posterior",
+    "blunderAltPlayout": "Simulación Alt.",
+    "generatingPlayout": "Generando simulación...",
+    "togglePlayoutDetails": "Alternar detalles de la simulación",
+    "generateAndAddPlayout": "Generar y añadir simulación alternativa al árbol de juego",
+    "alternatePlayout": "Simulación alternativa"
   },
 
   "analysisLegend": {
