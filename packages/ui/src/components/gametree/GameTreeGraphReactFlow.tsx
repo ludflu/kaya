@@ -633,7 +633,7 @@ const LOCAL_STORAGE_ZOOM_KEY = 'kaya-game-tree-zoom';
 
 export const GameTreeGraph = forwardRef<GameTreeGraphRef, GameTreeGraphProps>(
   ({ horizontal: controlledHorizontal, onLayoutChange, showMinimap = false }, ref) => {
-    const { gameTree, rootId, currentNodeId, goToNode } = useGameTree();
+    const { gameTree, rootId, currentNodeId, goToNode, centerRequestTime } = useGameTree();
     const { theme } = useTheme();
     const edgeColor = theme === 'dark' ? '#fff' : '#333';
     const [internalHorizontal, setInternalHorizontal] = React.useState(true);
@@ -728,7 +728,13 @@ export const GameTreeGraph = forwardRef<GameTreeGraphRef, GameTreeGraphProps>(
       if (currentNodeId === null || !reactFlowInstance.current) return;
 
       const currentNode = allNodesRef.current.find(n => n.id === String(currentNodeId));
-      if (!currentNode) return;
+      if (!currentNode) {
+        // If node not found, it might be because a new branch was just added.
+        // Request a new layout and flag that we need to center after it's done.
+        setNeedsLayout(true);
+        centerAfterLayoutRef.current = true;
+        return;
+      }
 
       const { x, y } = currentNode.position;
       // Zoom to a comfortable level (1.5x) to focus on the current node
@@ -746,6 +752,13 @@ export const GameTreeGraph = forwardRef<GameTreeGraphRef, GameTreeGraphProps>(
       }),
       [centerOnCurrentNode]
     );
+
+    // Handle external centering requests
+    useEffect(() => {
+      if (centerRequestTime) {
+        centerOnCurrentNode();
+      }
+    }, [centerRequestTime, centerOnCurrentNode]);
 
     // Handle container resize to update visible nodes
     useEffect(() => {
@@ -910,22 +923,12 @@ export const GameTreeGraph = forwardRef<GameTreeGraphRef, GameTreeGraphProps>(
               // No longer needed - all nodes are rendered without culling
             }, 50);
           } else if (centerAfterLayoutRef.current) {
-            // Center on current node after layout change (e.g., horizontal toggle)
+            // A centering action was requested and might have been deferred pending this layout.
             centerAfterLayoutRef.current = false;
+            // Now that layout is complete, try centering again.
+            // Use a small delay to ensure React Flow has processed the new nodes.
             setTimeout(() => {
-              if (!reactFlowInstance.current) return;
-
-              const targetNodeId = currentNodeIdRef.current;
-              const currentNode = layoutedNodes.find((n: Node) => n.id === String(targetNodeId));
-
-              if (currentNode) {
-                const viewport = reactFlowInstance.current.getViewport();
-                reactFlowInstance.current.setCenter(
-                  currentNode.position.x + 12,
-                  currentNode.position.y + 12,
-                  { zoom: viewport.zoom, duration: 200 }
-                );
-              }
+              centerOnCurrentNode();
             }, 50);
           }
         };

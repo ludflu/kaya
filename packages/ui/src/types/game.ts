@@ -285,4 +285,8 @@ export interface GameTreeContextValue {
 
   // Branch management
   deleteOtherBranches: () => void;
+
+  // Manual viewport control
+  requestCenterOnCurrentNode: () => void;
+  centerRequestTime: number | null;
 }
