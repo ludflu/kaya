@@ -59,3 +59,4 @@ export interface AppendNodeOptions {
 export { Hasher } from './Hasher';
 export { Draft } from './Draft';
 export { GameTree } from './GameTree';
+export { GameTreeCache } from './GameTreeCache';
