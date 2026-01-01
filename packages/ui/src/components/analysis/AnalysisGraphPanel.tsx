@@ -119,8 +119,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         const pathToNode = getPathToNode(gameTree, nodeId);
         let state = createInitialAnalysisState(boardSize);
 
-        // Apply all moves up to this node
-        for (let i = 0; i < pathToNode.length; i++) {
+        // Apply all moves up to BUT NOT INCLUDING this node (the blunder)
+        // This way state.nextToPlay will be the player who made the blunder
+        for (let i = 0; i < pathToNode.length - 1; i++) {
           state = updateAnalysisState(state, pathToNode[i] as any, i);
         }
 
