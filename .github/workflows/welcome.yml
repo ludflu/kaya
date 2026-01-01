@@ -16,8 +16,8 @@ jobs:
     steps:
       - uses: actions/first-interaction@v3
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          issue-message: |
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          issue_message: |
             👋 Welcome to Kaya, @${{ github.actor }}!
 
             Thanks for opening your first issue! We appreciate you taking the time to report this.
@@ -28,7 +28,7 @@ jobs:
             - Screenshots or screen recordings are super helpful for UI issues
 
             We'll take a look as soon as we can! ♟️
-          pr-message: |
+          pr_message: |
             🎉 Welcome to Kaya, @${{ github.actor }}!
 
             Thanks for your first contribution! We're excited to review your changes.
