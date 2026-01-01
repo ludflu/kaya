@@ -179,7 +179,7 @@ export interface GameTreeContextValue {
   addMoveSequence: (
     startNodeId: number | string,
     moves: Array<{ player: 'B' | 'W'; coord: string }>
-  ) => any;
+  ) => number | string | null;
 
   // Editing
   editMode: boolean;

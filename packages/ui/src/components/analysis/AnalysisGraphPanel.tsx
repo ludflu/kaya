@@ -191,12 +191,13 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
    * Add the alternate playout to the game tree as a new branch
    * This creates a variation starting from the parent of the blunder node
    * Uses addMoveSequence() to avoid navigation and caching side effects
+   * Returns the ID of the first node in the new branch
    */
   const addPlayoutToTree = useCallback(
-    (nodeId: number | string, playoutMoves?: string[]) => {
+    (nodeId: number | string, playoutMoves?: string[]): number | string | null => {
       if (!gameTree) {
         console.warn('Game tree not available');
-        return;
+        return null;
       }
 
       // Use provided moves or get from state
@@ -205,14 +206,14 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         const playout = alternatePlayouts.get(nodeId);
         if (!playout || playout.isGenerating || playout.moves.length === 0) {
           console.warn('No playout available to add to tree');
-          return;
+          return null;
         }
         moves = playout.moves;
       }
 
       if (moves.length === 0) {
         console.warn('No moves to add');
-        return;
+        return null;
       }
 
       const boardSize = gameInfo.boardSize ?? 19;
@@ -221,7 +222,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       const blunderNode = gameTree.get(nodeId);
       if (!blunderNode || blunderNode.parentId === null) {
         console.warn('Cannot find parent node');
-        return;
+        return null;
       }
 
       const parentNodeId = blunderNode.parentId;
@@ -247,8 +248,9 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         })
         .filter(m => m !== null);
 
-      // Add the move sequence to the tree
-      addMoveSequence(parentNodeId, sgfMoves);
+      // Add the move sequence to the tree and get the first node ID
+      const firstNodeId = addMoveSequence(parentNodeId, sgfMoves);
+      return firstNodeId;
     },
     [gameTree, alternatePlayouts, gameInfo, addMoveSequence]
   );
@@ -281,7 +283,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
         const moves = await generateAlternatePlayout(nodeId, moveNumber);
         // After generation completes, add to tree with the returned moves
         if (moves && moves.length > 0) {
-          addPlayoutToTree(nodeId, moves);
+          const firstNodeId = addPlayoutToTree(nodeId, moves);
           // Mark as added to tree
           setAlternatePlayouts(prev => {
             const newMap = new Map(prev);
@@ -292,6 +294,13 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
             return newMap;
           });
           togglePlayoutExpansion(nodeId);
+          // Navigate to the first node of the new branch after a brief delay
+          // to ensure the tree UI has updated
+          if (firstNodeId !== null) {
+            setTimeout(() => {
+              navigate(firstNodeId);
+            }, 100);
+          }
         }
         return;
       }
@@ -308,7 +317,7 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       }
 
       // Playout exists and is ready, add to tree
-      addPlayoutToTree(nodeId, playout.moves);
+      const firstNodeId = addPlayoutToTree(nodeId, playout.moves);
       // Mark as added to tree
       setAlternatePlayouts(prev => {
         const newMap = new Map(prev);
@@ -320,8 +329,21 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
       });
       // Optionally expand to show the moves
       togglePlayoutExpansion(nodeId);
+      // Navigate to the first node of the new branch after a brief delay
+      // to ensure the tree UI has updated
+      if (firstNodeId !== null) {
+        setTimeout(() => {
+          navigate(firstNodeId);
+        }, 100);
+      }
     },
-    [alternatePlayouts, generateAlternatePlayout, addPlayoutToTree, togglePlayoutExpansion]
+    [
+      alternatePlayouts,
+      generateAlternatePlayout,
+      addPlayoutToTree,
+      togglePlayoutExpansion,
+      navigate,
+    ]
   );
 
   // Build data points from the main line only

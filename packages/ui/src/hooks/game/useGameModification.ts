@@ -443,6 +443,8 @@ export function useGameModification({
     (startNodeId: number | string, moves: Array<{ player: 'B' | 'W'; coord: string }>) => {
       if (!gameTree) return null;
 
+      let firstNodeId: number | string | null = null;
+
       const newTree = gameTree.mutate(draft => {
         let currentId = startNodeId;
 
@@ -450,6 +452,9 @@ export function useGameModification({
           const property = player === 'B' ? 'B' : 'W';
           const newNodeId = draft.appendNode(currentId, { [property]: [coord] });
           if (newNodeId !== null) {
+            if (firstNodeId === null) {
+              firstNodeId = newNodeId;
+            }
             currentId = newNodeId;
           }
         }
@@ -459,7 +464,7 @@ export function useGameModification({
       setIsDirty(true);
       boardCache.clear();
 
-      return newTree;
+      return firstNodeId;
     },
     [gameTree, setGameTree, setIsDirty]
   );
