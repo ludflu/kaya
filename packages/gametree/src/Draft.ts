@@ -7,20 +7,14 @@ import type { GameTreeNode, IdType, AppendNodeOptions, Primitive } from './index
 export class Draft<T = Record<string, Primitive[]>> {
   base: GameTree<T>;
   root: GameTreeNode<T>;
-  _passOnNodeCache: boolean;
   _nodeCache: Record<IdType, GameTreeNode<T> | null>;
   _idAliases: Record<IdType, IdType>;
-  _heightCache: number | null;
-  _structureHashCache: number | null;
 
   constructor(base: GameTree<T>) {
     this.base = base;
     this.root = base.root;
-    this._passOnNodeCache = true;
     this._nodeCache = {};
     this._idAliases = base._idAliases;
-    this._heightCache = base._heightCache;
-    this._structureHashCache = base._structureHashCache;
   }
 
   get(id: IdType | null): GameTreeNode<T> | null {
@@ -123,11 +117,6 @@ export class Draft<T = Record<string, Primitive[]>> {
       parent.children.push(node);
 
       this._nodeCache[id] = node;
-      this._structureHashCache = null;
-
-      if (this._heightCache != null && this._getLevel(parentId) === this._heightCache - 1) {
-        this._heightCache++;
-      }
     }
 
     return true;
@@ -148,8 +137,6 @@ export class Draft<T = Record<string, Primitive[]>> {
     else return false;
 
     this._nodeCache[id] = null;
-    this._structureHashCache = null;
-    this._heightCache = null;
 
     return true;
   }
@@ -181,8 +168,6 @@ export class Draft<T = Record<string, Primitive[]>> {
       parent.children.splice(newIndex, 0, child);
     }
 
-    this._structureHashCache = null;
-
     return newIndex;
   }
 
@@ -194,10 +179,6 @@ export class Draft<T = Record<string, Primitive[]>> {
 
     node.parentId = null;
     this.root = node;
-
-    this._passOnNodeCache = false;
-    this._heightCache = null;
-    this._structureHashCache = null;
 
     return true;
   }

@@ -9,11 +9,7 @@ export class GameTree<T = Record<string, Primitive[]>> {
   getId: () => IdType;
   merger: (node: GameTreeNode<T>, data: T) => T | null;
   root: GameTreeNode<T>;
-  _nodeCache: Record<IdType, GameTreeNode<T> | null>;
   _idAliases: Record<IdType, IdType>;
-  _heightCache: number | null;
-  _hashCache: number | null;
-  _structureHashCache: number | null;
 
   constructor({ getId, merger, root }: GameTreeOptions<T> = {}) {
     // Initialize root node first (we need it to scan for max ID)
@@ -47,46 +43,25 @@ export class GameTree<T = Record<string, Primitive[]>> {
     this.merger = merger || (() => null);
 
     this.root = rootNode;
-    this._nodeCache = {};
     this._idAliases = {};
-    this._heightCache = null;
-    this._hashCache = null;
-    this._structureHashCache = null;
   }
 
   get(id: IdType | null): GameTreeNode<T> | null {
-    let node: GameTreeNode<T> | null = null;
-    if (id == null) return node;
+    if (id == null) return null;
     if (id in this._idAliases) return this.get(this._idAliases[id]);
 
-    if (id in this._nodeCache) {
-      node = this._nodeCache[id];
-    } else {
-      const inner = (node: GameTreeNode<T>): GameTreeNode<T> | null => {
-        this._nodeCache[node.id] = node;
-        if (node.id === id) return node;
+    const inner = (node: GameTreeNode<T>): GameTreeNode<T> | null => {
+      if (node.id === id) return node;
 
-        for (const child of node.children) {
-          const result = inner(child);
-          if (result != null) return result;
-        }
+      for (const child of node.children) {
+        const result = inner(child);
+        if (result != null) return result;
+      }
 
-        return null;
-      };
-
-      node = inner(this.root);
-    }
-
-    if (node == null) {
-      this._nodeCache[id] = null;
       return null;
-    }
+    };
 
-    for (const child of node.children) {
-      this._nodeCache[child.id] = child;
-    }
-
-    return node;
+    return inner(this.root);
   }
 
   *getSequence(id: IdType): Generator<GameTreeNode<T>> {
@@ -107,11 +82,6 @@ export class GameTree<T = Record<string, Primitive[]>> {
       }
       visited.add(node.id);
 
-      this._nodeCache[node.id] = node;
-      for (const child of node.children) {
-        this._nodeCache[child.id] = child;
-      }
-
       yield node;
     }
   }
@@ -128,10 +98,7 @@ export class GameTree<T = Record<string, Primitive[]>> {
       root: draft.root,
     });
 
-    if (draft._passOnNodeCache) tree._nodeCache = draft._nodeCache;
     tree._idAliases = draft._idAliases;
-    tree._structureHashCache = draft._structureHashCache;
-    tree._heightCache = draft._heightCache;
 
     return tree;
   }
@@ -267,53 +234,43 @@ export class GameTree<T = Record<string, Primitive[]>> {
   }
 
   getHeight(): number {
-    if (this._heightCache == null) {
-      const inner = (node: GameTreeNode<T>): number => {
-        let max = 0;
+    const inner = (node: GameTreeNode<T>): number => {
+      let max = 0;
 
-        for (const child of node.children) {
-          max = Math.max(max, inner(child));
-        }
+      for (const child of node.children) {
+        max = Math.max(max, inner(child));
+      }
 
-        return max + 1;
-      };
+      return max + 1;
+    };
 
-      this._heightCache = inner(this.root);
-    }
-
-    return this._heightCache;
+    return inner(this.root);
   }
 
   getStructureHash(): string {
-    if (this._structureHashCache == null) {
-      const hash = Hasher.new();
+    const hash = Hasher.new();
 
-      const inner = (node: GameTreeNode<T>): number => {
-        hash('[' + JSON.stringify(node.id) + ',');
-        node.children.forEach(inner);
-        return hash(']');
-      };
+    const inner = (node: GameTreeNode<T>): number => {
+      hash('[' + JSON.stringify(node.id) + ',');
+      node.children.forEach(inner);
+      return hash(']');
+    };
 
-      this._structureHashCache = inner(this.root);
-    }
-
-    return (this._structureHashCache >>> 0) + '';
+    const structureHash = inner(this.root);
+    return (structureHash >>> 0) + '';
   }
 
   getHash(): string {
-    if (this._hashCache == null) {
-      const hash = Hasher.new();
+    const hash = Hasher.new();
 
-      const inner = (node: GameTreeNode<T>): number => {
-        hash('[' + JSON.stringify(node.data) + ',');
-        node.children.forEach(inner);
-        return hash(']');
-      };
+    const inner = (node: GameTreeNode<T>): number => {
+      hash('[' + JSON.stringify(node.data) + ',');
+      node.children.forEach(inner);
+      return hash(']');
+    };
 
-      this._hashCache = inner(this.root);
-    }
-
-    return (this._hashCache >>> 0) + '';
+    const dataHash = inner(this.root);
+    return (dataHash >>> 0) + '';
   }
 
   onCurrentLine(id: IdType, currents: CurrentsObject = {}): boolean {
