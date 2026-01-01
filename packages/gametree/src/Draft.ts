@@ -48,26 +48,6 @@ export class Draft<T = Record<string, Primitive[]>> {
     return nodeCopy;
   }
 
-  private _getLevel(id: IdType): number {
-    let level = -1;
-    let node = this.get(id);
-    const visited = new Set<IdType>();
-
-    while (node != null) {
-      // Prevent infinite loop from circular references
-      if (visited.has(node.id)) {
-        console.error('Circular reference detected in game tree at _getLevel!', node.id);
-        return level;
-      }
-      visited.add(node.id);
-
-      level++;
-      node = this.get(node.parentId);
-    }
-
-    return level;
-  }
-
   appendNode(parentId: IdType, data: T, options: AppendNodeOptions = {}): IdType | null {
     const id = this.base.getId();
     const success = this.UNSAFE_appendNodeWithId(parentId, id, data, options);

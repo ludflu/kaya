@@ -90,6 +90,12 @@ export const AnalysisGraphPanel: React.FC<AnalysisGraphPanelProps> = ({ classNam
     setShowScoreLead(prev => !prev);
   }, []);
 
+  // Reset playout states when rootId changes
+  useEffect(() => {
+    setAlternatePlayouts(new Map());
+    setExpandedPlayouts(new Set());
+  }, [rootId]);
+
   /**
    * Generate an alternate playout for a given node by using generateMove repeatedly
    * Stores the moves to display in the panel and returns them
